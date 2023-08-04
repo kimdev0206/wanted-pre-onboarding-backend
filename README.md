@@ -1,5 +1,14 @@
 # 원티드 프리온보딩 백엔드 인턴십 - 선발 과제
-<br></br>
+
+- [원티드 프리온보딩 백엔드 인턴십 - 선발 과제](#원티드-프리온보딩-백엔드-인턴십---선발-과제)
+  - [1. 지원자의 성명](#1-지원자의-성명)
+  - [2. 애플리케이션의 실행 방법](#2-애플리케이션의-실행-방법)
+  - [3. 데이터베이스 테이블 구조 (링크)](#3-데이터베이스-테이블-구조-링크)
+  - [4. 구현한 API의 동작을 촬영한 데모 영상 (링크)](#4-구현한-api의-동작을-촬영한-데모-영상-링크)
+  - [5. 구현 방법 및 이유에 대한 간략한 설명](#5-구현-방법-및-이유에-대한-간략한-설명)
+  - [6. API 명세 (링크)](#6-api-명세-링크)
+  - [(선택) 클라우드 환경에 배포 환경을 설계하고 애플리케이션을 배포한 경우](#선택-클라우드-환경에-배포-환경을-설계하고-애플리케이션을-배포한-경우)
+
 
 ## 1. 지원자의 성명
 
@@ -9,9 +18,35 @@
 
 ## 2. 애플리케이션의 실행 방법
 
-- **2-1. `docker-compose.yml 파일`을 생성해주세요.**
+- **2-1. docker 엔진을 설치한 뒤, 실행해주세요.**  
 
-  ```yml
+  예로, 본 지원자는 개발 환경인 window에서 docker desktop을 설치하였고, 배포 환경인 amazone linux에서 다음과 같은 명령어를 실행하였습니다.
+
+  ```bash
+  sudo yum install docker -y
+  sudo service docker start
+  ```
+- **2-2. 본 애플리케이션 docker 이미지를 다운받아주세요.**  
+
+  ```bash  
+  docker pull yongki150/wanted-pre-onboarding-backend
+  ```
+
+  또는 
+
+  ```bash
+  docker pull ghcr.io/yongki150/wanted-pre-onboarding-backend:latest
+  ```
+
+- **2-3. mysql 8.0.32 docker 이미지를 다운받아주세요.**  
+
+  ```bash
+  docker pull mysql:8.0.32
+  ```
+
+- **2-1. `docker-compose.yaml 파일`을 생성한뒤, `<>`에 누락된 개인정보를 기입해주세요.**
+
+  ```yaml
   version: "3"
   services:
     db:
@@ -19,50 +54,29 @@
       container_name: db
       ports:
         - 3306:3306
+      environment:
+        MYSQL_ROOT_PASSWORD: <YOUR PASSWORD>
+        MYSQL_DATABASE: wanted_pre_onboarding
       volumes:
         - ./db/data:/var/lib/mysql
-      env_file:
-        - ./.env
     app:
       image: yongki150/wanted-pre-onboarding-backend:latest
       container_name: app
       ports:
-        - 3000:3000
-      env_file:
-        - ./.env
+        - 80:3000
+      environment:
+        DB_HOST: db
+        DB_USER: <YOUR USERNAME>
+        DB_PASSWORD: <YOUR PASSWORD>
+        JWT_SECRET: <YOUR JWT PRIVATE KEY>
       depends_on:
         - db
   ```
 
-- **2-2. 배포된 애플리케이션 docker 이미지를 다운받아주세요.**  
+- **2-3. docker 컨테이너를 실행해주세요.**
 
   ```bash
-  sudo service docker start
-  docker pull yongki150/wanted-pre-onboarding-backend
-  ```  
-
-- **2-3. `.env 파일`을 생성하고 누락된 환경변수를 기입해주세요.**  
-  
-  ```env
-  MYSQL_ROOT_PASSWORD=
-  MYSQL_ALLOW_EMPTY_PASSWORD=
-  MYSQL_RANDOM_ROOT_PASSWORD=
-  TZ=Asia/Seoul
-
-  PORT=3000
-  DB_HOST=db
-  DB_USER=root
-  DB_PORT=3306
-  DB_PASSWORD=
-  DB_DATABASE=wanted_pre_onboarding
-
-  JWT_SECRET=secret!12
-  ```
-
-- **2-4. 실행**
-
-  ```bash
-  docker-compose up
+  docker-compose up -d
   ```
 
 - **[2-4. 엔드포인트 호출 방법 (링크)](https://documenter.getpostman.com/view/11900791/2s9XxtzGEj)**
@@ -77,7 +91,9 @@
 
 <br></br>
 
-## 4. 구현한 API의 동작을 촬영한 데모 영상 링크
+## 4. 구현한 API의 동작을 촬영한 데모 영상 (링크)
+
+링크를 확인해주세요.
 
 <br></br>
 
@@ -167,12 +183,12 @@
 
 ## (선택) 클라우드 환경에 배포 환경을 설계하고 애플리케이션을 배포한 경우
 
-- **배포된 API 주소**
+- **[배포된 API 주소 (링크)](ec2-54-180-103-14.ap-northeast-2.compute.amazonaws.com)**
 
-  ec2-54-180-103-14.ap-northeast-2.compute.amazonaws.com
+  링크를 확인해주세요.
 
 <br/>
 
 - **설계한 AWS 환경 그림으로 첨부**
-
-  ![프리온보딩 drawio](https://github.com/yongki150/wanted-pre-onboarding-backend/assets/53007747/ee082569-36b3-4f67-8017-d446b8eef138)
+  
+  ![프리온보딩 drawio](https://github.com/yongki150/wanted-pre-onboarding-backend/assets/53007747/dd4864e7-3b4b-4f05-a3d7-853000b0bfd8)
