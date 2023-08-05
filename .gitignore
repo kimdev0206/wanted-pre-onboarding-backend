@@ -4,4 +4,7 @@ package-lock.json
 
 # env
 .env
+
+# etc
+assets/
 certs/
