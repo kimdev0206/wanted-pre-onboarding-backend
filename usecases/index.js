@@ -5,7 +5,6 @@ const makeUserUsecase = require("./user-usecase");
 const makePostUsecase = require("./post-usecase");
 const { userRepository, postRepository } = require("../repositories");
 
-// TODO: 기본 옵션 캡슐화
 const userUsecase = makeUserUsecase({
   userRepository,
   statusCodes,

@@ -19,7 +19,7 @@ function validateUserParam(req, res, next) {
       return res.json({ message: "비밀번호는 8자 이상이어야 합니다." });
     }
   } catch (err) {
-    logger.warn(`[${path.join(dirName, fileName)}]_${err.message}`);
+    logger.warn(`[${path.join(dirName, fileName)}] ${err.message}`);
 
     res.status(statusCodes.INTERNAL_SERVER_ERROR);
     return res.json({ message: "서버 내부에서 에러가 발생하였습니다." });
@@ -41,7 +41,7 @@ function verifyToken(req, res, next) {
     req.decodedToken = jwt.verify(encodedToken, secretKey);
     return next();
   } catch (err) {
-    logger.warn(`[${path.join(dirName, fileName)}]_${err.message}`);
+    logger.warn(`[${path.join(dirName, fileName)}] ${err.message}`);
 
     res.status(statusCodes.UNAUTHORIZED);
     return res.json({ message: "JWT 토큰이 만료되었습니다." });
@@ -56,7 +56,7 @@ function handleErrorEndpoint(req, res) {
 }
 
 function handleErrorModule(err, req, res) {
-  logger.error(`[${path.join(dirName, fileName)}]_${err.message}`);
+  logger.error(`[${path.join(dirName, fileName)}] ${err.message}`);
 
   res.status(err.status);
   return res.json({ message: "서버 내부에서 에러가 발생하였습니다." });

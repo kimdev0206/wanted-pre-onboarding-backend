@@ -19,7 +19,7 @@ module.exports = ({ userUsecase: usecase, logger }) => {
       res.status(status);
       res.json({ message });
     } catch (err) {
-      logger.warn(`[${fileName}]_${err.message}`);
+      logger.warn(`[${fileName}] ${err.message}`);
 
       res.status(err.status);
       res.json({ message: err.message });
@@ -37,7 +37,7 @@ module.exports = ({ userUsecase: usecase, logger }) => {
       logger.info(`사용자 ${userEmail}의 ${message}`);
       res.json({ message });
     } catch (err) {
-      logger.warn(`[${fileName}]_${err.message}`);
+      logger.warn(`[${fileName}] ${err.message}`);
 
       res.status(err.status);
       res.json({ message: err.message });

@@ -25,7 +25,7 @@ module.exports = ({ postUsecase: usecase, logger }) => {
       res.status(status);
       res.json({ message });
     } catch (err) {
-      logger.warn(`[${fileName}]_${err.message}`);
+      logger.warn(`[${fileName}] ${err.message}`);
 
       res.status(err.status);
       res.json({ message: err.message });
@@ -53,7 +53,7 @@ module.exports = ({ postUsecase: usecase, logger }) => {
         result,
       });
     } catch (err) {
-      logger.warn(`[${fileName}]_${err.message}`);
+      logger.warn(`[${fileName}] ${err.message}`);
 
       res.status(err.status);
       res.json({ message: err.message });
@@ -69,7 +69,7 @@ module.exports = ({ postUsecase: usecase, logger }) => {
       const message = "특정 게시글 조회가 완료되었습니다.";
       res.json({ message, result });
     } catch (err) {
-      logger.warn(`[${fileName}]_${err.message}`);
+      logger.warn(`[${fileName}] ${err.message}`);
 
       res.status(err.status);
       res.json({ message: err.message });
@@ -93,7 +93,7 @@ module.exports = ({ postUsecase: usecase, logger }) => {
       res.status(status);
       res.json({ message });
     } catch (err) {
-      logger.warn(`[${fileName}]_${err.message}`);
+      logger.warn(`[${fileName}] ${err.message}`);
 
       res.status(err.status);
       res.json({ message: err.message });
@@ -111,7 +111,7 @@ module.exports = ({ postUsecase: usecase, logger }) => {
       res.status(status);
       res.json({ message });
     } catch (err) {
-      logger.warn(`[${fileName}]_${err.message}`);
+      logger.warn(`[${fileName}] ${err.message}`);
 
       res.status(err.status);
       res.json({ message: err.message });
