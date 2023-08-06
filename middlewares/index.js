@@ -28,6 +28,11 @@ function validateUserParam(req, res, next) {
 }
 
 function verifyToken(req, res, next) {
+  if (!req.headers.authorization) {
+    res.status(statusCodes.UNAUTHORIZED);
+    return res.json({ message: "JWT 토큰이 필요합니다." });
+  }
+
   const encodedToken = req.headers.authorization.split(" ")[1];
   const secretKey = process.env.JWT_SECRET;
 
