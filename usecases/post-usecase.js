@@ -45,7 +45,8 @@ module.exports = ({ postRepository: repository, statusCodes }) => {
       return Promise.reject(err);
     }
 
-    return Promise.resolve(row);
+    const { userSeq: _, ...result } = row;
+    return Promise.resolve(result);
   }
 
   async function putPost({ postSeq, userSeq, postTitle, postContent }) {
@@ -54,6 +55,12 @@ module.exports = ({ postRepository: repository, statusCodes }) => {
     if (!row) {
       const err = new Error("유효하지 않은 게시글 일련번호 입니다.");
       err.status = statusCodes.BAD_REQUEST;
+      return Promise.reject(err);
+    }
+
+    if (userSeq !== row.userSeq) {
+      const err = new Error("권한이 없습니다.");
+      err.status = statusCodes.FORBIDDEN;
       return Promise.reject(err);
     }
 
@@ -75,6 +82,12 @@ module.exports = ({ postRepository: repository, statusCodes }) => {
     if (!row) {
       const err = new Error("유효하지 않은 게시글 일련번호 입니다.");
       err.status = statusCodes.BAD_REQUEST;
+      return Promise.reject(err);
+    }
+
+    if (userSeq !== row.userSeq) {
+      const err = new Error("권한이 없습니다.");
+      err.status = statusCodes.FORBIDDEN;
       return Promise.reject(err);
     }
 

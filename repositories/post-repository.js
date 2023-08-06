@@ -58,6 +58,7 @@ module.exports = (database) => {
         p.post_title AS postTitle,
         p.post_content AS postContent,
         u.user_email AS userEmail,
+        u.user_seq AS userSeq,
         p.created_at AS createdAt,
         p.updated_at As updatedAt
       FROM user AS u      
