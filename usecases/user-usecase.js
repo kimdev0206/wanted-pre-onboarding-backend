@@ -1,4 +1,4 @@
-module.exports = ({ userRepository: repository, statusCodes, bcypt, jwt }) => {
+module.exports = ({ userRepository: repository, statusCodes, argon2, jwt }) => {
   return Object.freeze({
     postUser,
     patchUser,
@@ -13,8 +13,7 @@ module.exports = ({ userRepository: repository, statusCodes, bcypt, jwt }) => {
       return Promise.reject(err);
     }
 
-    const saltRounds = 10;
-    const hashedPassword = await bcypt.hash(password, saltRounds);
+    const hashedPassword = await argon2.hash(password);
 
     const { insertId: userSeq } = await repository.insertUser({
       userEmail,
@@ -36,7 +35,7 @@ module.exports = ({ userRepository: repository, statusCodes, bcypt, jwt }) => {
       return Promise.reject(err);
     }
 
-    const isValidPassword = await bcypt.compare(password, row.hashedPassword);
+    const isValidPassword = await argon2.verify(row.hashedPassword, password);
 
     if (!isValidPassword) {
       const err = new Error("유효하지 않은 비밀번호 입니다.");

@@ -1,4 +1,4 @@
-const bcypt = require("bcrypt");
+const argon2 = require("argon2");
 const jwt = require("jsonwebtoken");
 const { StatusCodes: statusCodes } = require("http-status-codes");
 const makeUserUsecase = require("./user-usecase");
@@ -9,7 +9,7 @@ const { userRepository, postRepository } = require("../repositories");
 const userUsecase = makeUserUsecase({
   userRepository,
   statusCodes,
-  bcypt,
+  argon2,
   jwt,
 });
 const postUsecase = makePostUsecase({ postRepository, statusCodes });
