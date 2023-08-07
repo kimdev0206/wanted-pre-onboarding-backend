@@ -57,6 +57,7 @@
       environment:
         MYSQL_ROOT_PASSWORD: <YOUR PASSWORD>
         MYSQL_DATABASE: wanted_pre_onboarding
+        TZ: Asia/Seoul
       volumes:
         - ./db/data:/var/lib/mysql
     app:
@@ -69,17 +70,40 @@
         DB_USER: <YOUR USERNAME>
         DB_PASSWORD: <YOUR PASSWORD>
         JWT_SECRET: <YOUR JWT PRIVATE KEY>
+        TZ: Asia/Seoul
       depends_on:
         - db
   ```
+- **2-5. 테이블 생성 쿼리를 입력해주세요.**
 
-- **2-5. docker 컨테이너를 실행해주세요.**
+  ```sql
+  CREATE TABLE `user` (
+    `user_seq` int NOT NULL AUTO_INCREMENT,
+    `user_email` varchar(100) NOT NULL,
+    `hashed_password` varchar(97) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+    PRIMARY KEY (`user_seq`)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  
+  CREATE TABLE `post` (
+    `post_seq` int NOT NULL AUTO_INCREMENT,
+    `user_seq` int NOT NULL,
+    `post_title` varchar(60) NOT NULL,
+    `post_content` varchar(600) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`post_seq`),
+    KEY `post_FK` (`user_seq`),
+    CONSTRAINT `post_FK` FOREIGN KEY (`user_seq`) REFERENCES `user` (`user_seq`) ON DELETE CASCADE ON UPDATE CASCADE
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  ```
+  
+- **2-6. docker 컨테이너를 실행해주세요.**
 
   ```bash
   docker-compose up -d
   ```
 
-- **[2-6. 엔드포인트 호출 방법 (링크)](https://documenter.getpostman.com/view/11900791/2s9XxtzGEj)**
+- **[2-7. 엔드포인트 호출 방법 (링크)](https://documenter.getpostman.com/view/11900791/2s9XxtzGEj)**
 
   링크를 확인해주세요. (6. API 명세와 링크가 동일합니다.)
 
@@ -201,7 +225,9 @@
 
 - **배포된 API 주소**
 
-  ec2-54-180-103-14.ap-northeast-2.compute.amazonaws.com
+  ec2-52-79-223-215.ap-northeast-2.compute.amazonaws.com
+
+  > _선발 과제 평가가 마쳐진 현재, 인스턴스를 잠정적으로 중지하였습니다._
 
 <br/>
 
