@@ -5,6 +5,7 @@ const { userController, postController } = require("../controllers");
 const {
   validateUserParam,
   validatePostSeq,
+  validatePostTitle,
   verifyToken,
 } = require("../middlewares");
 
@@ -13,6 +14,7 @@ const postRoute = makePostRoute({
   postController,
   express,
   validatePostSeq,
+  validatePostTitle,
   verifyToken,
 });
 

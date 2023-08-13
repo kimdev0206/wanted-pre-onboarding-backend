@@ -39,6 +39,17 @@ function validatePostSeq(req, res, next) {
   return next();
 }
 
+function validatePostTitle(req, res, next) {
+  const { postTitle } = req.body;
+
+  if (!postTitle || !postTitle.length) {
+    res.status(statusCodes.BAD_REQUEST);
+    return res.json({ message: "게시글 제목이 필요합니다." });
+  }
+
+  return next();
+}
+
 function verifyToken(req, res, next) {
   if (!req.headers.authorization) {
     res.status(statusCodes.UNAUTHORIZED);
@@ -76,6 +87,7 @@ function handleErrorModule(err, req, res) {
 module.exports = Object.freeze({
   validateUserParam,
   validatePostSeq,
+  validatePostTitle,
   verifyToken,
   handleErrorEndpoint,
   handleErrorModule,
