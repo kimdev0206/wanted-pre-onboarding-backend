@@ -29,11 +29,22 @@ describe("과제 3. 새로운 게시글을 생성하는 엔드포인트", () => 
       .post("/post")
       .auth(jwtToken, { type: "bearer" })
       .send({
-        postTite: faker.person.jobTitle(),
+        postTitle: faker.person.jobTitle(),
         postContent: faker.lorem.text(),
       });
 
     expect(res.status).toBe(StatusCodes.CREATED);
+  });
+
+  test("새로운 게시글 생성 (게시글 제목 누락)", async () => {
+    const res = await agent
+      .post("/post")
+      .auth(jwtToken, { type: "bearer" })
+      .send({
+        postContent: faker.lorem.text(),
+      });
+
+    expect(res.status).toBe(StatusCodes.BAD_REQUEST);
   });
 
   test("새로운 게시글 생성 (JWT 토큰 만료)", async () => {
@@ -42,7 +53,7 @@ describe("과제 3. 새로운 게시글을 생성하는 엔드포인트", () => 
       .post("/post")
       .auth(expiredJWTtoken, { type: "bearer" })
       .send({
-        postTite: faker.person.jobTitle(),
+        postTitle: faker.person.jobTitle(),
         postContent: faker.lorem.text(),
       });
 
@@ -51,7 +62,7 @@ describe("과제 3. 새로운 게시글을 생성하는 엔드포인트", () => 
 
   test("새로운 게시글 생성 (JWT 토큰 누락)", async () => {
     const res = await agent.post("/post").send({
-      postTite: faker.person.jobTitle(),
+      postTitle: faker.person.jobTitle(),
       postContent: faker.lorem.text(),
     });
 
@@ -140,7 +151,7 @@ describe("과제 6. 특정 게시글을 수정하는 엔드포인트", () => {
       .put(`/post/${existPostSeq}`)
       .auth(jwtToken, { type: "bearer" })
       .send({
-        postTite: faker.person.jobTitle(),
+        postTitle: faker.person.jobTitle(),
         postContent: faker.lorem.text(),
       });
 
@@ -174,7 +185,7 @@ describe("과제 6. 특정 게시글을 수정하는 엔드포인트", () => {
       .put(`/post/${invalidPostSeq}`)
       .auth(jwtToken, { type: "bearer" })
       .send({
-        postTite: faker.person.jobTitle(),
+        postTitle: faker.person.jobTitle(),
         postContent: faker.lorem.text(),
       });
 
@@ -187,7 +198,30 @@ describe("과제 6. 특정 게시글을 수정하는 엔드포인트", () => {
       .put(`/post/${invalidPostSeq}`)
       .auth(jwtToken, { type: "bearer" })
       .send({
-        postTite: faker.person.jobTitle(),
+        postTitle: faker.person.jobTitle(),
+        postContent: faker.lorem.text(),
+      });
+
+    expect(res.status).toBe(StatusCodes.BAD_REQUEST);
+  });
+
+  test("특정 게시글 수정 (게시글 제목 누락)", async () => {
+    const res = await agent
+      .put(`/post/${existPostSeq}`)
+      .auth(jwtToken, { type: "bearer" })
+      .send({
+        postContent: faker.lorem.text(),
+      });
+
+    expect(res.status).toBe(StatusCodes.BAD_REQUEST);
+  });
+
+  test("특정 게시글 수정 (게시글 제목 누락)", async () => {
+    const res = await agent
+      .put(`/post/${existPostSeq}`)
+      .auth(jwtToken, { type: "bearer" })
+      .send({
+        postTitle: "",
         postContent: faker.lorem.text(),
       });
 
@@ -200,7 +234,7 @@ describe("과제 6. 특정 게시글을 수정하는 엔드포인트", () => {
       .put(`/post/${existPostSeq}`)
       .auth(expiredJWTtoken, { type: "bearer" })
       .send({
-        postTite: faker.person.jobTitle(),
+        postTitle: faker.person.jobTitle(),
         postContent: faker.lorem.text(),
       });
 
@@ -209,7 +243,7 @@ describe("과제 6. 특정 게시글을 수정하는 엔드포인트", () => {
 
   test("특정 게시글 수정 (JWT 토큰 누락)", async () => {
     const res = await agent.put(`/post/${existPostSeq}`).send({
-      postTite: faker.person.jobTitle(),
+      postTitle: faker.person.jobTitle(),
       postContent: faker.lorem.text(),
     });
 
@@ -222,7 +256,7 @@ describe("과제 6. 특정 게시글을 수정하는 엔드포인트", () => {
       .put(`/post/${existPostSeq}`)
       .auth(unexpiredJWTtoken, { type: "bearer" })
       .send({
-        postTite: faker.person.jobTitle(),
+        postTitle: faker.person.jobTitle(),
         postContent: faker.lorem.text(),
       });
 
