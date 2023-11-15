@@ -1,6 +1,7 @@
 const request = require("supertest");
 const { faker } = require("@faker-js/faker");
 const { StatusCodes } = require("http-status-codes");
+const jwt = require("jsonwebtoken");
 
 require("dotenv").config();
 const app = require("../apps")();
@@ -8,7 +9,7 @@ const database = require("../apps/database");
 const makeUserRepository = require("../repositories/user-repository");
 
 const limit = 10;
-let userEmail, password;
+let userEmail, password, jwtToken;
 
 beforeAll(async () => {
   userEmail = faker.internet.email();
@@ -62,7 +63,13 @@ describe("과제 3. 새로운 게시글을 생성하는 엔드포인트", () => 
   });
 
   test("새로운 게시글 생성 (JWT 토큰 만료)", async () => {
-    const expiredJWTtoken = process.env.TEST_EXPIRED_JWT_TOKEN;
+    const expiredJWTtoken = jwt.sign({}, process.env.JWT_SECRET, {
+      expiresIn: "1ms",
+      algorithm: "HS256",
+    });
+
+    setTimeout(() => {}, 1);
+
     const res = await agent
       .post("/post")
       .auth(expiredJWTtoken, { type: "bearer" })
@@ -240,7 +247,13 @@ describe("과제 6. 특정 게시글을 수정하는 엔드포인트", () => {
   });
 
   test("특정 게시글 수정 (JWT 토큰 만료)", async () => {
-    const expiredJWTtoken = process.env.TEST_EXPIRED_JWT_TOKEN;
+    const expiredJWTtoken = jwt.sign({}, process.env.JWT_SECRET, {
+      expiresIn: "1ms",
+      algorithm: "HS256",
+    });
+
+    setTimeout(() => {}, 1);
+
     const res = await agent
       .put(`/post/${existPostSeq}`)
       .auth(expiredJWTtoken, { type: "bearer" })
@@ -262,7 +275,11 @@ describe("과제 6. 특정 게시글을 수정하는 엔드포인트", () => {
   });
 
   test("특정 게시글 수정 (권한 없음)", async () => {
-    const unexpiredJWTtoken = process.env.TEST_UNEXPIRED_JWT_TOKEN;
+    const unexpiredJWTtoken = jwt.sign({}, process.env.JWT_SECRET, {
+      expiresIn: "1s",
+      algorithm: "HS256",
+    });
+
     const res = await agent
       .put(`/post/${existPostSeq}`)
       .auth(unexpiredJWTtoken, { type: "bearer" })
@@ -322,7 +339,13 @@ describe("과제 7. 특정 게시글을 삭제하는 엔드포인트", () => {
   });
 
   test("특정 게시글 삭제 (JWT 토큰 만료)", async () => {
-    const expiredJWTtoken = process.env.TEST_EXPIRED_JWT_TOKEN;
+    const expiredJWTtoken = jwt.sign({}, process.env.JWT_SECRET, {
+      expiresIn: "1ms",
+      algorithm: "HS256",
+    });
+
+    setTimeout(() => {}, 1);
+
     const res = await agent
       .delete(`/post/${existPostSeq}`)
       .auth(expiredJWTtoken, { type: "bearer" });
@@ -337,7 +360,11 @@ describe("과제 7. 특정 게시글을 삭제하는 엔드포인트", () => {
   });
 
   test("특정 게시글 삭제 (권한 없음)", async () => {
-    const unexpiredJWTtoken = process.env.TEST_UNEXPIRED_JWT_TOKEN;
+    const unexpiredJWTtoken = jwt.sign({}, process.env.JWT_SECRET, {
+      expiresIn: "1s",
+      algorithm: "HS256",
+    });
+
     const res = await agent
       .delete(`/post/${existPostSeq}`)
       .auth(unexpiredJWTtoken, { type: "bearer" });
