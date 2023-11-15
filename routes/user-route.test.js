@@ -4,19 +4,28 @@ const { StatusCodes } = require("http-status-codes");
 
 require("dotenv").config();
 const app = require("../apps")();
+const database = require("../apps/database");
+const makeUserRepository = require("../repositories/user-repository");
 
-const userEmail = process.env.TEST_USER_EMAIL;
-const password = process.env.TEST_PASSWORD;
+let userEmail, password;
 
-beforeAll(() => require("../apps/database"));
+beforeAll(() => {
+  userEmail = faker.internet.email();
+  password = faker.internet.password({ length: 8 });
+});
+
+afterAll((done) => {
+  const repository = makeUserRepository(database);
+  repository.deleteUser(userEmail).then(done);
+});
 
 describe("과제 1. 사용자 회원가입 엔드포인트 테스트", () => {
   test("사용자 회원가입", (done) => {
     request(app)
       .post("/user/sign-up")
       .send({
-        userEmail: faker.internet.email(),
-        password: faker.internet.password({ length: 8 }),
+        userEmail,
+        password,
       })
       .expect(StatusCodes.CREATED, done);
   });
@@ -26,7 +35,7 @@ describe("과제 1. 사용자 회원가입 엔드포인트 테스트", () => {
       .post("/user/sign-up")
       .send({
         userEmail: faker.lorem.word(),
-        password: faker.internet.password({ length: 8 }),
+        password,
       })
       .expect(StatusCodes.BAD_REQUEST, done);
   });
@@ -35,7 +44,7 @@ describe("과제 1. 사용자 회원가입 엔드포인트 테스트", () => {
     request(app)
       .post("/user/sign-up")
       .send({
-        userEmail: faker.internet.email(),
+        userEmail,
         password: faker.internet.password({ length: 7 }),
       })
       .expect(StatusCodes.BAD_REQUEST, done);
@@ -46,7 +55,7 @@ describe("과제 1. 사용자 회원가입 엔드포인트 테스트", () => {
       .post("/user/sign-up")
       .send({
         userEmail,
-        password: faker.internet.password({ length: 8 }),
+        password,
       })
       .expect(StatusCodes.UNAUTHORIZED, done);
   });

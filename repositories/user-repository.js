@@ -2,6 +2,7 @@ module.exports = (database) => {
   return Object.freeze({
     insertUser,
     selectByUserEmail,
+    deleteUser,
   });
 
   async function insertUser({ userEmail, hashedPassword }) {
@@ -31,5 +32,17 @@ module.exports = (database) => {
 
     const [result] = await pool.query(query);
     return result;
+  }
+
+  async function deleteUser(userEmail) {
+    const pool = await database.get();
+    const query = `
+      DELETE
+      FROM user
+      WHERE
+        user_email = '${userEmail}';
+    `;
+
+    await pool.query(query);
   }
 };

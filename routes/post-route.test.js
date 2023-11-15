@@ -4,18 +4,32 @@ const { StatusCodes } = require("http-status-codes");
 
 require("dotenv").config();
 const app = require("../apps")();
-const limit = 10;
+const database = require("../apps/database");
+const makeUserRepository = require("../repositories/user-repository");
 
-beforeAll(() => require("../apps/database"));
+const limit = 10;
+let userEmail, password;
+
+beforeAll(async () => {
+  userEmail = faker.internet.email();
+  password = faker.internet.password({ length: 8 });
+
+  await request(app).post("/user/sign-up").send({
+    userEmail,
+    password,
+  });
+});
+
+afterAll(async () => {
+  const repository = makeUserRepository(database);
+  await repository.deleteUser(userEmail);
+});
 
 describe("과제 3. 새로운 게시글을 생성하는 엔드포인트", () => {
   const agent = request.agent(app);
-  const userEmail = process.env.TEST_USER_EMAIL;
-  const password = process.env.TEST_PASSWORD;
-
   let jwtToken = "";
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const res = await agent.patch("/user/log-in").send({
       userEmail,
       password,
@@ -125,13 +139,10 @@ describe("과제 5. 특정 게시글을 조회하는 엔드포인트", () => {
 
 describe("과제 6. 특정 게시글을 수정하는 엔드포인트", () => {
   const agent = request.agent(app);
-  const userEmail = process.env.TEST_USER_EMAIL;
-  const password = process.env.TEST_PASSWORD;
-
   let jwtToken = "";
   let existPostSeq = 0;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const [userRes, postRes] = await Promise.all([
       agent.patch("/user/log-in").send({
         userEmail,
@@ -266,13 +277,10 @@ describe("과제 6. 특정 게시글을 수정하는 엔드포인트", () => {
 
 describe("과제 7. 특정 게시글을 삭제하는 엔드포인트", () => {
   const agent = request.agent(app);
-  const userEmail = process.env.TEST_USER_EMAIL;
-  const password = process.env.TEST_PASSWORD;
-
   let jwtToken = "";
   let existPostSeq = 0;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const [userRes, postRes] = await Promise.all([
       agent.patch("/user/log-in").send({
         userEmail,
