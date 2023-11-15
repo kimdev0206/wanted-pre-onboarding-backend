@@ -9,16 +9,19 @@ const database = require("../apps/database");
 const makeUserRepository = require("../repositories/user-repository");
 
 const limit = 10;
-let userEmail, password, jwtToken;
+let userEmail, password, agent, jwtToken;
 
 beforeAll(async () => {
   userEmail = faker.internet.email();
   password = faker.internet.password({ length: 8 });
+  agent = request.agent(app);
 
-  await request(app).post("/user/sign-up").send({
+  const res = await request(app).post("/user/sign-up").send({
     userEmail,
     password,
   });
+
+  jwtToken = res.headers.authorization.split(" ")[1];
 });
 
 afterAll(async () => {
@@ -27,18 +30,6 @@ afterAll(async () => {
 });
 
 describe("과제 3. 새로운 게시글을 생성하는 엔드포인트", () => {
-  const agent = request.agent(app);
-  let jwtToken = "";
-
-  beforeAll(async () => {
-    const res = await agent.patch("/user/log-in").send({
-      userEmail,
-      password,
-    });
-
-    jwtToken = res.headers.authorization.split(" ")[1];
-  });
-
   test("새로운 게시글 생성", async () => {
     const res = await agent
       .post("/post")
@@ -145,23 +136,13 @@ describe("과제 5. 특정 게시글을 조회하는 엔드포인트", () => {
 });
 
 describe("과제 6. 특정 게시글을 수정하는 엔드포인트", () => {
-  const agent = request.agent(app);
-  let jwtToken = "";
   let existPostSeq = 0;
 
   beforeAll(async () => {
-    const [userRes, postRes] = await Promise.all([
-      agent.patch("/user/log-in").send({
-        userEmail,
-        password,
-      }),
-      agent.get(`/post/list?limit=${limit}&pageSeq=1`),
-    ]);
+    const res = await agent.get(`/post/list?limit=${limit}&pageSeq=1`);
+    expect(res.body.result[0].userEmail).toBe(userEmail);
 
-    expect(postRes.body.result[0].userEmail).toBe(userEmail);
-
-    jwtToken = userRes.headers.authorization.split(" ")[1];
-    existPostSeq = postRes.body.result[0].postSeq;
+    existPostSeq = res.body.result[0].postSeq;
   });
 
   test("특정 게시글 수정", async () => {
@@ -293,23 +274,13 @@ describe("과제 6. 특정 게시글을 수정하는 엔드포인트", () => {
 });
 
 describe("과제 7. 특정 게시글을 삭제하는 엔드포인트", () => {
-  const agent = request.agent(app);
-  let jwtToken = "";
   let existPostSeq = 0;
 
   beforeAll(async () => {
-    const [userRes, postRes] = await Promise.all([
-      agent.patch("/user/log-in").send({
-        userEmail,
-        password,
-      }),
-      agent.get(`/post/list?limit=${limit}&pageSeq=1`),
-    ]);
+    const res = await agent.get(`/post/list?limit=${limit}&pageSeq=1`);
+    expect(res.body.result[0].userEmail).toBe(userEmail);
 
-    expect(postRes.body.result[0].userEmail).toBe(userEmail);
-
-    jwtToken = userRes.headers.authorization.split(" ")[1];
-    existPostSeq = postRes.body.result[0].postSeq;
+    existPostSeq = res.body.result[0].postSeq;
   });
 
   test("특정 게시글 삭제", async () => {
