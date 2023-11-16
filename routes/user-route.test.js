@@ -16,7 +16,11 @@ beforeAll(() => {
 
 afterAll((done) => {
   const repository = makeUserRepository(database);
-  repository.deleteUser(userEmail).then(done);
+
+  repository
+    .deleteUser(userEmail)
+    .then(() => database.close())
+    .then(done);
 });
 
 describe("과제 1. 사용자 회원가입 엔드포인트 테스트", () => {

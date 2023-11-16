@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "node_modules\\.bin\\nodemon index.js",
-    "test": "node_modules\\.bin\\jest"
+    "test": "node_modules\\.bin\\jest --detectOpenHandles"
   },
   "author": "Yongki Kim",
   "license": "ISC",
