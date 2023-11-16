@@ -299,14 +299,6 @@ describe("과제 7. 특정 게시글을 삭제하는 엔드포인트", () => {
     existPostSeq = row.postSeq;
   });
 
-  test("특정 게시글 삭제", async () => {
-    const res = await agent
-      .delete(`/post/${existPostSeq}`)
-      .auth(jwtToken, { type: "bearer" });
-
-    expect(res.status).toBe(StatusCodes.NO_CONTENT);
-  });
-
   test("특정 게시글 삭제 (유효하지 않은 게시글 일련번호)", async () => {
     const invalidPostSeq = Number.MAX_SAFE_INTEGER;
     const res = await agent
@@ -357,5 +349,13 @@ describe("과제 7. 특정 게시글을 삭제하는 엔드포인트", () => {
       .auth(unexpiredJWTtoken, { type: "bearer" });
 
     expect(res.status).toBe(StatusCodes.FORBIDDEN);
+  });
+
+  test("특정 게시글 삭제", async () => {
+    const res = await agent
+      .delete(`/post/${existPostSeq}`)
+      .auth(jwtToken, { type: "bearer" });
+
+    expect(res.status).toBe(StatusCodes.NO_CONTENT);
   });
 });
