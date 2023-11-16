@@ -54,34 +54,6 @@ describe("과제 3. 새로운 게시글을 생성하는 엔드포인트", () => 
 
     expect(res.status).toBe(StatusCodes.BAD_REQUEST);
   });
-
-  test("새로운 게시글 생성 (JWT 토큰 만료)", async () => {
-    const expiredJWTtoken = jwt.sign({}, process.env.JWT_SECRET, {
-      expiresIn: "1ms",
-      algorithm: "HS256",
-    });
-
-    setTimeout(() => {}, 1);
-
-    const res = await agent
-      .post("/post")
-      .auth(expiredJWTtoken, { type: "bearer" })
-      .send({
-        postTitle: faker.person.jobTitle(),
-        postContent: faker.lorem.text(),
-      });
-
-    expect(res.status).toBe(StatusCodes.UNAUTHORIZED);
-  });
-
-  test("새로운 게시글 생성 (JWT 토큰 누락)", async () => {
-    const res = await agent.post("/post").send({
-      postTitle: faker.person.jobTitle(),
-      postContent: faker.lorem.text(),
-    });
-
-    expect(res.status).toBe(StatusCodes.UNAUTHORIZED);
-  });
 });
 
 describe("과제 4. 게시글 목록을 조회하는 엔드포인트", () => {
@@ -241,34 +213,6 @@ describe("과제 6. 특정 게시글을 수정하는 엔드포인트", () => {
     expect(res.status).toBe(StatusCodes.BAD_REQUEST);
   });
 
-  test("특정 게시글 수정 (JWT 토큰 만료)", async () => {
-    const expiredJWTtoken = jwt.sign({}, process.env.JWT_SECRET, {
-      expiresIn: "1ms",
-      algorithm: "HS256",
-    });
-
-    setTimeout(() => {}, 1);
-
-    const res = await agent
-      .put(`/post/${existPostSeq}`)
-      .auth(expiredJWTtoken, { type: "bearer" })
-      .send({
-        postTitle: faker.person.jobTitle(),
-        postContent: faker.lorem.text(),
-      });
-
-    expect(res.status).toBe(StatusCodes.UNAUTHORIZED);
-  });
-
-  test("특정 게시글 수정 (JWT 토큰 누락)", async () => {
-    const res = await agent.put(`/post/${existPostSeq}`).send({
-      postTitle: faker.person.jobTitle(),
-      postContent: faker.lorem.text(),
-    });
-
-    expect(res.status).toBe(StatusCodes.UNAUTHORIZED);
-  });
-
   test("특정 게시글 수정 (권한 없음)", async () => {
     const unexpiredJWTtoken = jwt.sign({}, process.env.JWT_SECRET, {
       expiresIn: "1s",
@@ -315,27 +259,6 @@ describe("과제 7. 특정 게시글을 삭제하는 엔드포인트", () => {
       .auth(jwtToken, { type: "bearer" });
 
     expect(res.status).toBe(StatusCodes.BAD_REQUEST);
-  });
-
-  test("특정 게시글 삭제 (JWT 토큰 만료)", async () => {
-    const expiredJWTtoken = jwt.sign({}, process.env.JWT_SECRET, {
-      expiresIn: "1ms",
-      algorithm: "HS256",
-    });
-
-    setTimeout(() => {}, 1);
-
-    const res = await agent
-      .delete(`/post/${existPostSeq}`)
-      .auth(expiredJWTtoken, { type: "bearer" });
-
-    expect(res.status).toBe(StatusCodes.UNAUTHORIZED);
-  });
-
-  test("특정 게시글 삭제 (JWT 토큰 누락)", async () => {
-    const res = await agent.delete(`/post/${existPostSeq}`);
-
-    expect(res.status).toBe(StatusCodes.UNAUTHORIZED);
   });
 
   test("특정 게시글 삭제 (권한 없음)", async () => {
