@@ -7,9 +7,10 @@ require("dotenv").config();
 const app = require("../apps")();
 const database = require("../apps/database");
 const makeUserRepository = require("../repositories/user-repository");
+const makePostRepository = require("../repositories/post-repository");
 
 const limit = 10;
-let userEmail, password, agent, jwtToken;
+let userEmail, password, userSeq, agent, jwtToken;
 
 beforeAll(async () => {
   userEmail = faker.internet.email();
@@ -22,6 +23,7 @@ beforeAll(async () => {
   });
 
   jwtToken = res.headers.authorization.split(" ")[1];
+  userSeq = jwt.verify(jwtToken, process.env.JWT_SECRET).userSeq;
 });
 
 afterAll(async () => {
@@ -113,9 +115,19 @@ describe("과제 4. 게시글 목록을 조회하는 엔드포인트", () => {
 });
 
 describe("과제 5. 특정 게시글을 조회하는 엔드포인트", () => {
+  let existPostSeq;
+
+  beforeAll(async () => {
+    const repository = makePostRepository(database);
+    const [row] = await repository.selectLatestPost(userSeq);
+
+    expect(row.userEmail).toBe(userEmail);
+
+    existPostSeq = row.postSeq;
+  });
+
   test("특정 게시글 조회", async () => {
-    const validPostSeq = 1;
-    const res = await request(app).get(`/post/${validPostSeq}`);
+    const res = await request(app).get(`/post/${existPostSeq}`);
 
     expect(res.body.result).toHaveProperty("postTitle");
   });
@@ -136,13 +148,15 @@ describe("과제 5. 특정 게시글을 조회하는 엔드포인트", () => {
 });
 
 describe("과제 6. 특정 게시글을 수정하는 엔드포인트", () => {
-  let existPostSeq = 0;
+  let existPostSeq;
 
   beforeAll(async () => {
-    const res = await agent.get(`/post/list?limit=${limit}&pageSeq=1`);
-    expect(res.body.result[0].userEmail).toBe(userEmail);
+    const repository = makePostRepository(database);
+    const [row] = await repository.selectLatestPost(userSeq);
 
-    existPostSeq = res.body.result[0].postSeq;
+    expect(row.userEmail).toBe(userEmail);
+
+    existPostSeq = row.postSeq;
   });
 
   test("특정 게시글 수정", async () => {
@@ -274,13 +288,15 @@ describe("과제 6. 특정 게시글을 수정하는 엔드포인트", () => {
 });
 
 describe("과제 7. 특정 게시글을 삭제하는 엔드포인트", () => {
-  let existPostSeq = 0;
+  let existPostSeq;
 
   beforeAll(async () => {
-    const res = await agent.get(`/post/list?limit=${limit}&pageSeq=1`);
-    expect(res.body.result[0].userEmail).toBe(userEmail);
+    const repository = makePostRepository(database);
+    const [row] = await repository.selectLatestPost(userSeq);
 
-    existPostSeq = res.body.result[0].postSeq;
+    expect(row.userEmail).toBe(userEmail);
+
+    existPostSeq = row.postSeq;
   });
 
   test("특정 게시글 삭제", async () => {

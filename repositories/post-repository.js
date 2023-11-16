@@ -4,6 +4,7 @@ module.exports = (database) => {
     selectPostListCount,
     selectPostListPaging,
     selectPost,
+    selectLatestPost,
     updatePost,
     deletePost,
   });
@@ -65,6 +66,24 @@ module.exports = (database) => {
       INNER JOIN post AS p
         ON u.user_seq = p.user_seq
       WHERE p.post_seq = ${postSeq};
+    `;
+
+    const [result] = await pool.query(query);
+    return result;
+  }
+
+  async function selectLatestPost(userSeq) {
+    const pool = await database.get();
+    const query = `
+      SELECT
+        p.post_seq AS postSeq,
+        u.user_email AS userEmail
+      FROM user AS u
+      INNER JOIN post AS p
+        ON u.user_seq = p.user_seq
+      WHERE u.user_seq = ${userSeq}
+      ORDER BY p.created_at DESC
+      LIMIT 1;
     `;
 
     const [result] = await pool.query(query);
