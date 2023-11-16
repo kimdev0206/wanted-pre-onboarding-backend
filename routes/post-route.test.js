@@ -17,7 +17,7 @@ beforeAll(async () => {
   password = faker.internet.password({ length: 8 });
   agent = request.agent(app);
 
-  const res = await request(app).post("/user/sign-up").send({
+  const res = await agent.post("/user/sign-up").send({
     userEmail,
     password,
   });
