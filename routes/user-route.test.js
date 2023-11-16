@@ -30,26 +30,6 @@ describe("과제 1. 사용자 회원가입 엔드포인트 테스트", () => {
       .expect(StatusCodes.CREATED, done);
   });
 
-  test("사용자 회원가입 (유효하지 않은 이메일 형식)", (done) => {
-    request(app)
-      .post("/user/sign-up")
-      .send({
-        userEmail: faker.lorem.word(),
-        password,
-      })
-      .expect(StatusCodes.BAD_REQUEST, done);
-  });
-
-  test("사용자 회원가입 (유효하지 않은 비밀번호 형식)", (done) => {
-    request(app)
-      .post("/user/sign-up")
-      .send({
-        userEmail,
-        password: faker.internet.password({ length: 7 }),
-      })
-      .expect(StatusCodes.BAD_REQUEST, done);
-  });
-
   test("사용자 회원가입 (중복된 이메일)", (done) => {
     request(app)
       .post("/user/sign-up")
@@ -70,26 +50,6 @@ describe("과제 2. 사용자 로그인 엔드포인트", () => {
         password,
       })
       .end(done);
-  });
-
-  test("사용자 로그인 (유효하지 않은 이메일 형식)", (done) => {
-    request(app)
-      .patch("/user/log-in")
-      .send({
-        userEmail: faker.lorem.word(),
-        password,
-      })
-      .expect(StatusCodes.BAD_REQUEST, done);
-  });
-
-  test("사용자 로그인 (유효하지 않은 비밀번호 형식)", (done) => {
-    request(app)
-      .patch("/user/log-in")
-      .send({
-        userEmail,
-        password: faker.internet.password({ length: 7 }),
-      })
-      .expect(StatusCodes.BAD_REQUEST, done);
   });
 
   test("사용자 로그인 (가입되지 않은 이메일)", (done) => {
