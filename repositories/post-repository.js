@@ -3,6 +3,8 @@ module.exports = (database) => {
     insertPost,
     selectPostListCount,
     selectPostListPaging,
+    selectSubPostSeqs,
+    selectParentPostSeq,
     selectPost,
     selectLatestPost,
     updatePost,
@@ -46,6 +48,36 @@ module.exports = (database) => {
         ON u.user_seq = p.user_seq
       ORDER BY created_at DESC
       LIMIT ${limit} OFFSET ${offset};
+    `;
+
+    const [result] = await pool.query(query);
+    return result;
+  }
+
+  async function selectSubPostSeqs(postSeq) {
+    const pool = await database.get();
+    const query = `
+			SELECT
+				post_seq AS postSeq
+      FROM post
+			WHERE
+				parent_seq = ${postSeq};
+		`;
+
+    const [result] = await pool.query(query);
+    return result;
+  }
+
+  async function selectParentPostSeq(postSeq) {
+    const pool = await database.get();
+    const query = `
+      SELECT
+        p.post_seq AS postSeq
+      FROM post AS c
+      INNER JOIN post AS p
+        ON c.parent_seq = p.post_seq
+      WHERE
+        c.post_seq = ${postSeq};
     `;
 
     const [result] = await pool.query(query);

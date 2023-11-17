@@ -37,6 +37,26 @@ module.exports = ({ postRepository: repository, statusCodes }) => {
   }
 
   async function getPost(postSeq) {
+    const getSubPostSeqs = async (postSeq) => {
+      const rows = await repository.selectSubPostSeqs(postSeq);
+      return rows.map((row) => row.postSeq);
+    };
+
+    const getBreadcrumbs = async (postSeq) => {
+      const result = [];
+
+      while (true) {
+        const [parentRow] = await repository.selectParentPostSeq(postSeq);
+
+        if (!parentRow) break;
+
+        postSeq = parentRow.postSeq;
+        result.push(postSeq);
+      }
+
+      return result.reverse();
+    };
+
     const [row] = await repository.selectPost(postSeq);
 
     if (!row) {
@@ -46,7 +66,12 @@ module.exports = ({ postRepository: repository, statusCodes }) => {
     }
 
     const { userSeq: _, ...result } = row;
-    return Promise.resolve(result);
+    const [subPostSeqs, breadcrumbs] = await Promise.all([
+      getSubPostSeqs(postSeq),
+      getBreadcrumbs(postSeq),
+    ]);
+
+    return Promise.resolve({ ...result, subPostSeqs, breadcrumbs });
   }
 
   async function putPost({ postSeq, userSeq, postTitle, postContent }) {
