@@ -1,6 +1,7 @@
 module.exports = (database) => {
   return Object.freeze({
     insertPost,
+    insertPostWithSeq,
     selectPostListCount,
     selectPostListPaging,
     selectSubPostSeqs,
@@ -18,6 +19,24 @@ module.exports = (database) => {
         (user_seq, post_title, post_content)
       VALUES
         (${userSeq}, '${postTitle}', '${postContent}');
+    `;
+
+    await pool.query(query);
+  }
+
+  async function insertPostWithSeq({
+    postSeq,
+    parentSeq,
+    postTitle,
+    postContent,
+    userSeq,
+  }) {
+    const pool = await database.get();
+    const query = `
+      INSERT INTO post
+        (post_seq, parent_seq, user_seq, post_title, post_content)
+      VALUES
+        (${postSeq}, ${parentSeq}, ${userSeq}, '${postTitle}', '${postContent}');
     `;
 
     await pool.query(query);
