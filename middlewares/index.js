@@ -28,6 +28,28 @@ function validateUserParam(req, res, next) {
   return next();
 }
 
+function validatePostSeq(req, res, next) {
+  const { postSeq } = req.params;
+
+  if (isNaN(postSeq)) {
+    res.status(statusCodes.BAD_REQUEST);
+    return res.json({ message: "유효하지 않은 게시글 일련번호 형식입니다." });
+  }
+
+  return next();
+}
+
+function validatePostTitle(req, res, next) {
+  const { postTitle } = req.body;
+
+  if (!postTitle || !postTitle.length) {
+    res.status(statusCodes.BAD_REQUEST);
+    return res.json({ message: "게시글 제목이 필요합니다." });
+  }
+
+  return next();
+}
+
 function verifyToken(req, res, next) {
   if (!req.headers.authorization) {
     res.status(statusCodes.UNAUTHORIZED);
@@ -64,6 +86,8 @@ function handleErrorModule(err, req, res) {
 
 module.exports = Object.freeze({
   validateUserParam,
+  validatePostSeq,
+  validatePostTitle,
   verifyToken,
   handleErrorEndpoint,
   handleErrorModule,

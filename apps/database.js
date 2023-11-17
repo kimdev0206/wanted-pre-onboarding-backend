@@ -23,6 +23,10 @@ class Database {
   async get() {
     return this.pool;
   }
+
+  close() {
+    this.pool.end();
+  }
 }
 
 module.exports = new Database(config);
