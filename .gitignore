@@ -8,3 +8,6 @@ package-lock.json
 # etc
 assets/
 certs/
+
+# local docker container 
+db/

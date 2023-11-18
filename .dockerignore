@@ -1,10 +1,19 @@
-/node_modules
+<!-- dependencies -->
+node_modules/
+package-lock.json
 
+<!-- env -->
 .env
 
-/assets
-/certs
+<!-- etc -->
+assets/
+certs/
 *.md
 
+<!-- git -->
 .git
 .gitignore
+
+<!-- docker -->
+**/docker-compose.yaml
+db/
