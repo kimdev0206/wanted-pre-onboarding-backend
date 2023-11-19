@@ -71,7 +71,11 @@ module.exports = ({ postRepository: repository, statusCodes }) => {
       getBreadcrumbs(postSeq),
     ]);
 
-    return Promise.resolve({ ...result, subPostSeqs, breadcrumbs });
+    return Promise.resolve({
+      ...result,
+      subPostSeqs,
+      breadcrumbs: { depth: breadcrumbs.length, result: breadcrumbs },
+    });
   }
 
   async function putPost({ postSeq, userSeq, postTitle, postContent }) {
