@@ -6,20 +6,6 @@ const database = require("./database");
 const makeUserRepository = require("../repositories/post-repository");
 const logger = require("../utils/logger");
 
-Array.prototype.shuffle = function () {
-  let curIdx = this.length;
-  let rdmIdx;
-
-  while (curIdx > 0) {
-    rdmIdx = Math.floor(Math.random() * curIdx);
-    curIdx -= 1;
-
-    [this[curIdx], this[rdmIdx]] = [this[rdmIdx], this[curIdx]];
-  }
-
-  return this;
-};
-
 function makePromise({ postSeq, parentSeq, repository }) {
   return repository.insertPostWithSeq({
     postSeq,
@@ -34,8 +20,12 @@ function makePostSeq(lv, seq) {
   return +(lv - 1 + "" + seq);
 }
 
-function getRdmSiblingSize(siblingSizes) {
-  return siblingSizes[Math.floor(siblingSizes.length * Math.random())];
+function* makeSiblingSizeGenerator(size) {
+  while (true) {
+    for (let i = size; i >= 1; i--) {
+      yield i;
+    }
+  }
 }
 
 function makeBreadcrumbs({
@@ -44,13 +34,13 @@ function makeBreadcrumbs({
   visited,
   promises,
   repository,
-  siblingSizes,
+  getSiblingSize,
   breadcrumbs,
   parentSeq,
 }) {
   if (lv === maxLv) return;
 
-  const siblingSize = getRdmSiblingSize(siblingSizes);
+  const siblingSize = getSiblingSize.next().value;
 
   for (let i = 1; i <= siblingSize; i++) {
     const postSeq = makePostSeq(lv, i);
@@ -66,7 +56,7 @@ function makeBreadcrumbs({
         visited,
         promises,
         repository,
-        siblingSizes,
+        getSiblingSize,
         breadcrumbs: breadcrumbs.get(postSeq),
         parentSeq: postSeq,
       });
@@ -78,10 +68,7 @@ function makeBreadcrumbs({
 
 function insertBreadcrumbs(maxLv, maxSiblingSize) {
   const repository = makeUserRepository(database);
-  const siblingSizes = Array.from(
-    { length: maxSiblingSize },
-    (_, i) => i + 1
-  ).shuffle();
+  const getSiblingSize = makeSiblingSizeGenerator(maxSiblingSize);
 
   /**
    * NOTE:
@@ -99,7 +86,7 @@ function insertBreadcrumbs(maxLv, maxSiblingSize) {
     visited: new Set(),
     promises: [makePromise({ postSeq, parentSeq: null, repository })],
     repository,
-    siblingSizes,
+    getSiblingSize,
     breadcrumbs: breadcrumbs.get(postSeq),
     parentSeq: postSeq,
   });
