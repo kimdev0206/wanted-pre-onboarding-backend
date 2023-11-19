@@ -90,13 +90,23 @@ module.exports = (database) => {
   async function selectParentPostSeq(postSeq) {
     const pool = await database.get();
     const query = `
+      WITH RECURSIVE cte AS (
+        SELECT
+          post_seq,
+          parent_seq
+        FROM post
+        WHERE post_seq = ${postSeq}
+        UNION ALL
+        SELECT
+          p.post_seq,
+          p.parent_seq
+        FROM post AS p
+        INNER JOIN cte AS c
+          ON c.parent_seq = p.post_seq
+      )
       SELECT
-        p.post_seq AS postSeq
-      FROM post AS c
-      INNER JOIN post AS p
-        ON c.parent_seq = p.post_seq
-      WHERE
-        c.post_seq = ${postSeq};
+        post_seq AS postSeq
+      FROM cte;
     `;
 
     const [result] = await pool.query(query);

@@ -43,18 +43,8 @@ module.exports = ({ postRepository: repository, statusCodes }) => {
     };
 
     const getBreadcrumbs = async (postSeq) => {
-      const result = [];
-
-      while (true) {
-        const [parentRow] = await repository.selectParentPostSeq(postSeq);
-
-        if (!parentRow) break;
-
-        postSeq = parentRow.postSeq;
-        result.push(postSeq);
-      }
-
-      return result.reverse();
+      const [_, ...rows] = await repository.selectParentPostSeq(postSeq);
+      return rows.map((row) => row.postSeq).reverse();
     };
 
     const [row] = await repository.selectPost(postSeq);
