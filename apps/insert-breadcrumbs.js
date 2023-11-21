@@ -16,7 +16,7 @@ function makePromise({ postSeq, parentSeq, repository }) {
 }
 
 function makePostSeq(lv, seq) {
-  return +(lv - 1 + "" + seq);
+  return +(lv + "" + seq);
 }
 
 function* makeSiblingSizeGenerator(size) {
@@ -66,13 +66,7 @@ function insertBreadcrumbs(maxLv, maxSiblingSize) {
   const repository = makeUserRepository(database);
   const getSiblingSize = makeSiblingSizeGenerator(maxSiblingSize);
 
-  /**
-   * NOTE:
-   * 현 스코프의 postSeq는 breadcrumbs의 root를 의미합니다.
-   * 하지만, mysql2 패키지를 통해 pk를 0으로 넣을 수 없었습니다.
-   * 따라서, mysql int 타입의 max 값을 root로 설정하였습니다.
-   */
-  const postSeq = 2_147_483_647;
+  const postSeq = 1;
   const promises = makeBreadcrumbs({
     lv: 1,
     maxLv,
