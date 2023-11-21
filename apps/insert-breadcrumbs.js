@@ -1,5 +1,4 @@
 const { faker } = require("@faker-js/faker");
-const util = require("node:util");
 
 require("dotenv").config();
 const database = require("./database");
@@ -35,7 +34,6 @@ function makeBreadcrumbs({
   promises,
   repository,
   getSiblingSize,
-  breadcrumbs,
   parentSeq,
 }) {
   if (lv === maxLv) return;
@@ -47,7 +45,6 @@ function makeBreadcrumbs({
 
     if (!visited.has(postSeq)) {
       visited.add(postSeq);
-      breadcrumbs.set(postSeq, new Map());
       promises.push(makePromise({ postSeq, parentSeq, repository }));
 
       makeBreadcrumbs({
@@ -57,7 +54,6 @@ function makeBreadcrumbs({
         promises,
         repository,
         getSiblingSize,
-        breadcrumbs: breadcrumbs.get(postSeq),
         parentSeq: postSeq,
       });
     }
@@ -77,9 +73,6 @@ function insertBreadcrumbs(maxLv, maxSiblingSize) {
    * 따라서, mysql int 타입의 max 값을 root로 설정하였습니다.
    */
   const postSeq = 2_147_483_647;
-  const breadcrumbs = new Map();
-  breadcrumbs.set(postSeq, new Map());
-
   const promises = makeBreadcrumbs({
     lv: 1,
     maxLv,
@@ -87,16 +80,8 @@ function insertBreadcrumbs(maxLv, maxSiblingSize) {
     promises: [makePromise({ postSeq, parentSeq: null, repository })],
     repository,
     getSiblingSize,
-    breadcrumbs: breadcrumbs.get(postSeq),
     parentSeq: postSeq,
   });
-
-  logger.info(
-    `생성된 breadcrumbs는 다음과 같습니다.
-    ${util.inspect(breadcrumbs, {
-      depth: maxLv,
-    })}`
-  );
 
   return Promise.allSettled(promises);
 }
