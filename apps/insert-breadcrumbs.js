@@ -19,61 +19,33 @@ function makePostSeq(lv, seq) {
   return +(lv + "" + seq);
 }
 
-function* makeSiblingSizeGenerator(size) {
-  while (true) {
-    for (let i = size; i >= 1; i--) {
-      yield i;
-    }
-  }
-}
-
-function makeBreadcrumbs({
-  lv,
-  maxLv,
-  visited,
-  promises,
-  repository,
-  getSiblingSize,
-  parentSeq,
-}) {
+function makeBreadcrumbs({ lv, maxLv, promises, repository, parentSeq }) {
   if (lv === maxLv) return;
 
-  const siblingSize = getSiblingSize.next().value;
+  const postSeq = makePostSeq(lv, lv - 1);
+  promises.push(makePromise({ postSeq, parentSeq, repository }));
 
-  for (let i = 1; i <= siblingSize; i++) {
-    const postSeq = makePostSeq(lv, i);
-
-    if (!visited.has(postSeq)) {
-      visited.add(postSeq);
-      promises.push(makePromise({ postSeq, parentSeq, repository }));
-
-      makeBreadcrumbs({
-        lv: lv + 1,
-        maxLv,
-        visited,
-        promises,
-        repository,
-        getSiblingSize,
-        parentSeq: postSeq,
-      });
-    }
-  }
+  makeBreadcrumbs({
+    lv: lv + 1,
+    maxLv,
+    promises,
+    repository,
+    parentSeq: postSeq,
+  });
 
   return promises;
 }
 
-function insertBreadcrumbs(maxLv, maxSiblingSize) {
+function insertBreadcrumbs(maxLv) {
   const repository = makeUserRepository(database);
-  const getSiblingSize = makeSiblingSizeGenerator(maxSiblingSize);
-
   const postSeq = 1;
+  const lv = 0;
+
   const promises = makeBreadcrumbs({
-    lv: 1,
+    lv: lv + 1,
     maxLv,
-    visited: new Set(),
     promises: [makePromise({ postSeq, parentSeq: null, repository })],
     repository,
-    getSiblingSize,
     parentSeq: postSeq,
   });
 
@@ -81,10 +53,9 @@ function insertBreadcrumbs(maxLv, maxSiblingSize) {
 }
 
 (function () {
-  const maxLv = 100;
-  const maxSiblingSize = 5;
+  const maxLv = 1000;
 
-  insertBreadcrumbs(maxLv, maxSiblingSize)
+  insertBreadcrumbs(maxLv)
     .then((values) =>
       logger.info(`게시글 ${values.length}개를 삽입하였습니다.`)
     )
