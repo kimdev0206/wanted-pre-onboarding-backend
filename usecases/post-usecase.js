@@ -1,9 +1,15 @@
 module.exports = ({ postRepository: repository, statusCodes }) => {
+  const getBreadcrumbs = async (postSeq) => {
+    const [_, ...rows] = await repository.selectParentPostSeq(postSeq);
+    return rows.map((row) => row.postSeq).reverse();
+  };
+
   return Object.freeze({
     postPost,
     getPostList,
     getPost,
     putPost,
+    putBreadcrumbs,
     deletePost,
   });
 
@@ -40,11 +46,6 @@ module.exports = ({ postRepository: repository, statusCodes }) => {
     const getSubPostSeqs = async (postSeq) => {
       const rows = await repository.selectSubPostSeqs(postSeq);
       return rows.map((row) => row.postSeq);
-    };
-
-    const getBreadcrumbs = async (postSeq) => {
-      const [_, ...rows] = await repository.selectParentPostSeq(postSeq);
-      return rows.map((row) => row.postSeq).reverse();
     };
 
     const [row] = await repository.selectPost(postSeq);
@@ -91,6 +92,36 @@ module.exports = ({ postRepository: repository, statusCodes }) => {
     }
 
     await repository.updatePost({ postSeq, userSeq, postTitle, postContent });
+
+    return Promise.resolve(statusCodes.CREATED);
+  }
+
+  async function putBreadcrumbs({ postSeq, userSeq, parentSeq }) {
+    const [[row], breadcrumbs] = await Promise.all([
+      repository.selectPost(postSeq),
+      getBreadcrumbs(postSeq),
+    ]);
+
+    if (!row) {
+      const err = new Error("유효하지 않은 게시글 일련번호 입니다.");
+      err.status = statusCodes.BAD_REQUEST;
+      return Promise.reject(err);
+    }
+
+    if (userSeq !== row.userSeq) {
+      const err = new Error("권한이 없습니다.");
+      err.status = statusCodes.FORBIDDEN;
+      return Promise.reject(err);
+    }
+
+    const prevParentSeq = breadcrumbs.at(-1);
+    const isNotModified = prevParentSeq === parentSeq;
+
+    if (isNotModified) {
+      return Promise.resolve(statusCodes.NO_CONTENT);
+    }
+
+    await repository.updateBreadcrumbs({ postSeq, userSeq, parentSeq });
 
     return Promise.resolve(statusCodes.CREATED);
   }

@@ -9,6 +9,7 @@ module.exports = (database) => {
     selectPost,
     selectLatestPost,
     updatePost,
+    updateBreadcrumbs,
     deletePost,
   });
 
@@ -158,6 +159,20 @@ module.exports = (database) => {
       SET
         post_title = '${postTitle}',
         post_content = '${postContent}'
+      WHERE user_seq = ${userSeq}
+        AND post_seq = ${postSeq};
+    `;
+
+    const [result] = await pool.query(query);
+    return result;
+  }
+
+  async function updateBreadcrumbs({ postSeq, userSeq, parentSeq }) {
+    const pool = await database.get();
+    const query = `
+      UPDATE post
+      SET        
+        parent_seq = ${parentSeq}
       WHERE user_seq = ${userSeq}
         AND post_seq = ${postSeq};
     `;
