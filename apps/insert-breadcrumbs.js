@@ -2,10 +2,10 @@ const { faker } = require("@faker-js/faker");
 
 require("dotenv").config();
 const database = require("./database");
-const makeUserRepository = require("../repositories/post-repository");
+const { postRepository: repository } = require("../repositories");
 const logger = require("../utils/logger");
 
-function makePromise({ postSeq, parentSeq, repository }) {
+function makePromise({ postSeq, parentSeq }) {
   return repository.insertPostWithSeq({
     postSeq,
     parentSeq,
@@ -19,17 +19,16 @@ function makePostSeq(lv, seq) {
   return +(lv + "" + seq);
 }
 
-function makeBreadcrumbs({ lv, maxLv, promises, repository, parentSeq }) {
+function makeBreadcrumbs({ lv, maxLv, promises, parentSeq }) {
   if (lv === maxLv) return;
 
   const postSeq = makePostSeq(lv, lv - 1);
-  promises.push(makePromise({ postSeq, parentSeq, repository }));
+  promises.push(makePromise({ postSeq, parentSeq }));
 
   makeBreadcrumbs({
     lv: lv + 1,
     maxLv,
     promises,
-    repository,
     parentSeq: postSeq,
   });
 
@@ -37,15 +36,13 @@ function makeBreadcrumbs({ lv, maxLv, promises, repository, parentSeq }) {
 }
 
 function insertBreadcrumbs(maxLv) {
-  const repository = makeUserRepository(database);
   const postSeq = 1;
   const lv = 0;
 
   const promises = makeBreadcrumbs({
     lv: lv + 1,
     maxLv,
-    promises: [makePromise({ postSeq, parentSeq: null, repository })],
-    repository,
+    promises: [makePromise({ postSeq, parentSeq: null })],
     parentSeq: postSeq,
   });
 
