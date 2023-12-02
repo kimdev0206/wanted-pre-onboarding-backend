@@ -72,3 +72,51 @@ describe("부모 게시글 일련번호 수정", () => {
     expect(status).to.equal(statusCodes.NO_CONTENT);
   });
 });
+
+describe("게시글 삭제 후, 부모 게시글과 손자 게시글 계층 연결", () => {
+  let postTitle, postContent;
+
+  beforeEach(async () => {
+    ({ postTitle, postContent } = await usecase.getPost(postSeq));
+  });
+
+  afterEach(async () => {
+    const subPostSeq = 32;
+    const postSeqs = [parentSeq, postSeq, subPostSeq];
+
+    const recoverPost = repository.insertPostWithSeq({
+      postSeq,
+      parentSeq,
+      postTitle,
+      postContent,
+      userSeq,
+    });
+
+    const updatePosts = [];
+
+    for (let i = 1; i < postSeqs.length; i++) {
+      const postSeq = postSeqs[i];
+      const parentSeq = postSeqs[i - 1];
+
+      updatePosts.push(
+        repository.updateBreadcrumbs({
+          postSeq,
+          userSeq,
+          parentSeq,
+        })
+      );
+    }
+
+    await Promise.allSettled([recoverPost, ...updatePosts]);
+  });
+
+  /**
+   * prev: null ← 1 ← 10 ← 21 ← 32
+   * next: null ← 1 ← 10 ← 32
+   */
+  test("게시글 삭제 후, 부모 게시글과 손자 게시글 계층 연결", async () => {
+    const status = await usecase.deleteBreadcrumbs({ postSeq, userSeq });
+
+    expect(status).to.equal(statusCodes.NO_CONTENT);
+  });
+});

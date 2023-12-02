@@ -4,6 +4,11 @@ module.exports = ({ postRepository: repository, statusCodes }) => {
     return rows.map((row) => row.postSeq).reverse();
   };
 
+  const getSubPostSeqs = async (postSeq) => {
+    const rows = await repository.selectSubPostSeqs(postSeq);
+    return rows.map((row) => row.postSeq);
+  };
+
   return Object.freeze({
     postPost,
     getPostList,
@@ -11,6 +16,7 @@ module.exports = ({ postRepository: repository, statusCodes }) => {
     putPost,
     putBreadcrumbs,
     deletePost,
+    deleteBreadcrumbs,
   });
 
   async function postPost({ postTitle, postContent, userSeq }) {
@@ -43,11 +49,6 @@ module.exports = ({ postRepository: repository, statusCodes }) => {
   }
 
   async function getPost(postSeq) {
-    const getSubPostSeqs = async (postSeq) => {
-      const rows = await repository.selectSubPostSeqs(postSeq);
-      return rows.map((row) => row.postSeq);
-    };
-
     const [row] = await repository.selectPost(postSeq);
 
     if (!row) {
@@ -142,6 +143,42 @@ module.exports = ({ postRepository: repository, statusCodes }) => {
     }
 
     await repository.deletePost({ postSeq, userSeq });
+
+    return Promise.resolve(statusCodes.NO_CONTENT);
+  }
+
+  async function deleteBreadcrumbs({ postSeq, userSeq }) {
+    const [[row], breadcrumbs, subPostSeqs] = await Promise.all([
+      repository.selectPost(postSeq),
+      getBreadcrumbs(postSeq),
+      getSubPostSeqs(postSeq),
+    ]);
+
+    if (!row) {
+      const err = new Error("유효하지 않은 게시글 일련번호 입니다.");
+      err.status = statusCodes.BAD_REQUEST;
+      return Promise.reject(err);
+    }
+
+    if (userSeq !== row.userSeq) {
+      const err = new Error("권한이 없습니다.");
+      err.status = statusCodes.FORBIDDEN;
+      return Promise.reject(err);
+    }
+
+    const promises = subPostSeqs.map((subPostSeq) =>
+      getBreadcrumbs(subPostSeq)
+    );
+
+    const subPostSeq = [await Promise.allSettled(promises)].filter(
+      (breadcrumbs) => (postSeq = breadcrumbs.at(-1))
+    );
+    const parentSeq = breadcrumbs.at(-1);
+
+    await Promise.allSettled([
+      repository.updateBreadcrumbs({ postSeq: subPostSeq, userSeq, parentSeq }),
+      repository.deletePost({ postSeq, userSeq }),
+    ]);
 
     return Promise.resolve(statusCodes.NO_CONTENT);
   }
