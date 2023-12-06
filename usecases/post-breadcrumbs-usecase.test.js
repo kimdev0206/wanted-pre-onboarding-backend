@@ -9,19 +9,19 @@ const { postRepository: repository } = require("../repositories");
 
 const userSeq = +process.env.TEST_USER_SEQ;
 const postSeq = 21;
-const parentSeq = 10;
+const superSeq = 10;
 
 afterAll(() => database.close());
 
 describe("부모 게시글 일련번호 수정", () => {
   const postSeqs = [2, 11];
-  const newParentSeq = 11;
+  const newSuperSeq = 11;
 
   beforeEach(async () => {
     const promises = postSeqs.map((postSeq, idx) =>
       repository.insertPostWithSeq({
         postSeq,
-        parentSeq: postSeqs[idx - 1],
+        superSeq: postSeqs[idx - 1],
         postTitle: faker.person.jobTitle(),
         postContent: faker.lorem.text(),
         userSeq,
@@ -35,7 +35,7 @@ describe("부모 게시글 일련번호 수정", () => {
     const recoverPost = usecase.putBreadcrumbs({
       postSeq,
       userSeq,
-      parentSeq,
+      superSeq,
     });
 
     const deletePosts = postSeqs.map((postSeq) =>
@@ -56,7 +56,7 @@ describe("부모 게시글 일련번호 수정", () => {
     const status = await usecase.putBreadcrumbs({
       postSeq,
       userSeq,
-      parentSeq: newParentSeq,
+      superSeq: newSuperSeq,
     });
 
     expect(status).to.equal(statusCodes.CREATED);
@@ -66,7 +66,7 @@ describe("부모 게시글 일련번호 수정", () => {
     const status = await usecase.putBreadcrumbs({
       postSeq,
       userSeq,
-      parentSeq,
+      superSeq,
     });
 
     expect(status).to.equal(statusCodes.NO_CONTENT);
@@ -81,12 +81,12 @@ describe("게시글 삭제 후, 부모 게시글과 손자 게시글 계층 연�
   });
 
   afterEach(async () => {
-    const subPostSeq = 32;
-    const postSeqs = [parentSeq, postSeq, subPostSeq];
+    const subSeq = 32;
+    const postSeqs = [superSeq, postSeq, subSeq];
 
     const recoverPost = repository.insertPostWithSeq({
       postSeq,
-      parentSeq,
+      superSeq,
       postTitle,
       postContent,
       userSeq,
@@ -96,13 +96,13 @@ describe("게시글 삭제 후, 부모 게시글과 손자 게시글 계층 연�
 
     for (let i = 1; i < postSeqs.length; i++) {
       const postSeq = postSeqs[i];
-      const parentSeq = postSeqs[i - 1];
+      const superSeq = postSeqs[i - 1];
 
       updatePosts.push(
-        repository.updateBreadcrumbs({
+        repository.updateSuperTree({
           postSeq,
           userSeq,
-          parentSeq,
+          superSeq,
         })
       );
     }

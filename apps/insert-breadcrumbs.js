@@ -5,10 +5,10 @@ const database = require("./database");
 const { postRepository: repository } = require("../repositories");
 const logger = require("../utils/logger");
 
-function makePromise({ postSeq, parentSeq }) {
+function makePromise({ postSeq, superSeq }) {
   return repository.insertPostWithSeq({
     postSeq,
-    parentSeq,
+    superSeq,
     postTitle: faker.person.jobTitle(),
     postContent: faker.lorem.text(),
     userSeq: process.env.TEST_USER_SEQ,
@@ -19,17 +19,17 @@ function makePostSeq(lv, seq) {
   return +(lv + "" + seq);
 }
 
-function makeBreadcrumbs({ lv, maxLv, promises, parentSeq }) {
+function makeBreadcrumbs({ lv, maxLv, promises, superSeq }) {
   if (lv === maxLv) return;
 
   const postSeq = makePostSeq(lv, lv - 1);
-  promises.push(makePromise({ postSeq, parentSeq }));
+  promises.push(makePromise({ postSeq, superSeq }));
 
   makeBreadcrumbs({
     lv: lv + 1,
     maxLv,
     promises,
-    parentSeq: postSeq,
+    superSeq: postSeq,
   });
 
   return promises;
@@ -42,8 +42,8 @@ function insertBreadcrumbs(maxLv) {
   const promises = makeBreadcrumbs({
     lv: lv + 1,
     maxLv,
-    promises: [makePromise({ postSeq, parentSeq: null })],
-    parentSeq: postSeq,
+    promises: [makePromise({ postSeq, superSeq: null })],
+    superSeq: postSeq,
   });
 
   return Promise.allSettled(promises);

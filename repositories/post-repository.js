@@ -4,12 +4,12 @@ module.exports = (database) => {
     insertPostWithSeq,
     selectPostListCount,
     selectPostListPaging,
-    selectSubPostSeqs,
-    selectParentPostSeq,
+    selectChild,
+    selectSuperTree,
     selectPost,
     selectLatestPost,
     updatePost,
-    updateBreadcrumbs,
+    updateSuperTree,
     deletePost,
   });
 
@@ -27,7 +27,7 @@ module.exports = (database) => {
 
   async function insertPostWithSeq({
     postSeq,
-    parentSeq,
+    superSeq,
     postTitle,
     postContent,
     userSeq,
@@ -35,9 +35,9 @@ module.exports = (database) => {
     const pool = await database.get();
     const query = `
       INSERT INTO post
-        (post_seq, parent_seq, user_seq, post_title, post_content)
+        (post_seq, super_seq, user_seq, post_title, post_content)
       VALUES
-        (${postSeq}, ${parentSeq}, ${userSeq}, '${postTitle}', '${postContent}');
+        (${postSeq}, ${superSeq}, ${userSeq}, '${postTitle}', '${postContent}');
     `;
 
     await pool.query(query);
@@ -74,36 +74,40 @@ module.exports = (database) => {
     return result;
   }
 
-  async function selectSubPostSeqs(postSeq) {
+  async function selectChild(postSeq) {
     const pool = await database.get();
     const query = `
 			SELECT
 				post_seq AS postSeq
-      FROM post
+      FROM
+        post
 			WHERE
-				parent_seq = ${postSeq};
+				super_seq = ${postSeq};
 		`;
 
     const [result] = await pool.query(query);
     return result;
   }
 
-  async function selectParentPostSeq(postSeq) {
+  async function selectSuperTree(postSeq) {
     const pool = await database.get();
     const query = `
       WITH RECURSIVE cte AS (
         SELECT
           post_seq,
-          parent_seq
-        FROM post
-        WHERE post_seq = ${postSeq}
+          super_seq
+        FROM
+          post
+        WHERE
+          post_seq = ${postSeq}
         UNION ALL
         SELECT
           p.post_seq,
-          p.parent_seq
-        FROM post AS p
+          p.super_seq
+        FROM
+          post AS p
         INNER JOIN cte AS c
-          ON c.parent_seq = p.post_seq
+          ON c.super_seq = p.post_seq
       )
       SELECT
         post_seq AS postSeq
@@ -167,13 +171,15 @@ module.exports = (database) => {
     return result;
   }
 
-  async function updateBreadcrumbs({ postSeq, userSeq, parentSeq }) {
+  async function updateSuperTree({ postSeq, userSeq, superSeq }) {
     const pool = await database.get();
     const query = `
-      UPDATE post
-      SET        
-        parent_seq = ${parentSeq}
-      WHERE user_seq = ${userSeq}
+      UPDATE
+        post
+      SET
+        super_seq = ${superSeq}
+      WHERE 
+        user_seq = ${userSeq}
         AND post_seq = ${postSeq};
     `;
 

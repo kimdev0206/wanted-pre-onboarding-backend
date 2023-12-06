@@ -1,11 +1,11 @@
 module.exports = ({ postRepository: repository, statusCodes }) => {
-  const getBreadcrumbs = async (postSeq) => {
-    const [_, ...rows] = await repository.selectParentPostSeq(postSeq);
+  const getSuperTree = async (postSeq) => {
+    const [_, ...rows] = await repository.selectSuperTree(postSeq);
     return rows.map((row) => row.postSeq).reverse();
   };
 
-  const getSubPostSeqs = async (postSeq) => {
-    const rows = await repository.selectSubPostSeqs(postSeq);
+  const getChild = async (postSeq) => {
+    const rows = await repository.selectChild(postSeq);
     return rows.map((row) => row.postSeq);
   };
 
@@ -58,15 +58,15 @@ module.exports = ({ postRepository: repository, statusCodes }) => {
     }
 
     const { userSeq: _, ...result } = row;
-    const [subPostSeqs, breadcrumbs] = await Promise.all([
-      getSubPostSeqs(postSeq),
-      getBreadcrumbs(postSeq),
+    const [child, superTree] = await Promise.all([
+      getChild(postSeq),
+      getSuperTree(postSeq),
     ]);
 
     return Promise.resolve({
       ...result,
-      subPostSeqs,
-      breadcrumbs: { depth: breadcrumbs.length, result: breadcrumbs },
+      child,
+      breadcrumbs: { depth: superTree.length, result: superTree },
     });
   }
 
@@ -97,10 +97,10 @@ module.exports = ({ postRepository: repository, statusCodes }) => {
     return Promise.resolve(statusCodes.CREATED);
   }
 
-  async function putBreadcrumbs({ postSeq, userSeq, parentSeq }) {
-    const [[row], breadcrumbs] = await Promise.all([
+  async function putBreadcrumbs({ postSeq, userSeq, superSeq }) {
+    const [[row], superTree] = await Promise.all([
       repository.selectPost(postSeq),
-      getBreadcrumbs(postSeq),
+      getSuperTree(postSeq),
     ]);
 
     if (!row) {
@@ -115,14 +115,14 @@ module.exports = ({ postRepository: repository, statusCodes }) => {
       return Promise.reject(err);
     }
 
-    const prevParentSeq = breadcrumbs.at(-1);
-    const isNotModified = prevParentSeq === parentSeq;
+    const prevSuperSeq = superTree.at(-1);
+    const isNotModified = prevSuperSeq === superSeq;
 
     if (isNotModified) {
       return Promise.resolve(statusCodes.NO_CONTENT);
     }
 
-    await repository.updateBreadcrumbs({ postSeq, userSeq, parentSeq });
+    await repository.updateSuperTree({ postSeq, userSeq, superSeq });
 
     return Promise.resolve(statusCodes.CREATED);
   }
@@ -148,10 +148,10 @@ module.exports = ({ postRepository: repository, statusCodes }) => {
   }
 
   async function deleteBreadcrumbs({ postSeq, userSeq }) {
-    const [[row], breadcrumbs, subPostSeqs] = await Promise.all([
+    const [[row], superTree, child] = await Promise.all([
       repository.selectPost(postSeq),
-      getBreadcrumbs(postSeq),
-      getSubPostSeqs(postSeq),
+      getSuperTree(postSeq),
+      getChild(postSeq),
     ]);
 
     if (!row) {
@@ -166,17 +166,15 @@ module.exports = ({ postRepository: repository, statusCodes }) => {
       return Promise.reject(err);
     }
 
-    const promises = subPostSeqs.map((subPostSeq) =>
-      getBreadcrumbs(subPostSeq)
-    );
+    const promises = child.map((subSeq) => getSuperTree(subSeq));
 
-    const subPostSeq = [await Promise.allSettled(promises)].filter(
-      (breadcrumbs) => (postSeq = breadcrumbs.at(-1))
+    const subSeq = [await Promise.allSettled(promises)].filter(
+      (superTree) => (postSeq = superTree.at(-1))
     );
-    const parentSeq = breadcrumbs.at(-1);
+    const superSeq = superTree.at(-1);
 
     await Promise.allSettled([
-      repository.updateBreadcrumbs({ postSeq: subPostSeq, userSeq, parentSeq }),
+      repository.updateSuperTree({ postSeq: subSeq, userSeq, superSeq }),
       repository.deletePost({ postSeq, userSeq }),
     ]);
 
