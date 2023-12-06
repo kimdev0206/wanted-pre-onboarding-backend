@@ -11,7 +11,7 @@ const userSeq = +process.env.TEST_USER_SEQ;
 const postSeq = 21;
 const superSeq = 10;
 
-afterAll(() => database.close());
+afterAll(async () => await database.close());
 
 describe("부모 게시글 일련번호 수정", () => {
   const postSeqs = [2, 11];

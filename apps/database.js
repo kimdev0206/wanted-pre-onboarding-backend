@@ -24,8 +24,8 @@ class Database {
     return this.pool;
   }
 
-  close() {
-    this.pool.end();
+  async close() {
+    await this.pool.end();
   }
 }
 
