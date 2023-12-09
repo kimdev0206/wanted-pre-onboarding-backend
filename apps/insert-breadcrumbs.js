@@ -42,7 +42,7 @@ function insertBreadcrumbs(maxLv) {
   const promises = makeBreadcrumbs({
     lv: lv + 1,
     maxLv,
-    promises: [makePromise({ postSeq, superSeq: null })],
+    promises: [],
     superSeq: postSeq,
   });
 

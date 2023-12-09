@@ -14,21 +14,16 @@ const superSeq = 10;
 afterAll(async () => await database.close());
 
 describe("부모 게시글 일련번호 수정", () => {
-  const postSeqs = [2, 11];
   const newSuperSeq = 11;
 
   beforeEach(async () => {
-    const promises = postSeqs.map((postSeq, idx) =>
-      repository.insertPostWithSeq({
-        postSeq,
-        superSeq: postSeqs[idx - 1],
-        postTitle: faker.person.jobTitle(),
-        postContent: faker.lorem.text(),
-        userSeq,
-      })
-    );
-
-    await Promise.allSettled(promises);
+    await repository.insertPostWithSeq({
+      postSeq: newSuperSeq,
+      superSeq: 1,
+      postTitle: faker.person.jobTitle(),
+      postContent: faker.lorem.text(),
+      userSeq,
+    });
   });
 
   afterEach(async () => {
@@ -38,20 +33,14 @@ describe("부모 게시글 일련번호 수정", () => {
       superSeq,
     });
 
-    const deletePosts = postSeqs.map((postSeq) =>
-      repository.deletePost({
-        postSeq,
-        userSeq,
-      })
-    );
+    const deletePost = repository.deletePost({
+      postSeq: newSuperSeq,
+      userSeq,
+    });
 
-    await Promise.allSettled([recoverPost, ...deletePosts]);
+    await Promise.allSettled([recoverPost, deletePost]);
   });
 
-  /**
-   * prev: null ← 1 ← 10 ← 21
-   * next: null ← 2 ← 11 ← 21
-   */
   test("부모 게시글 일련번호 수정", async () => {
     const status = await usecase.putBreadcrumbs({
       postSeq,
@@ -110,10 +99,6 @@ describe("게시글 삭제 후, 부모 게시글과 손자 게시글 계층 연�
     await Promise.allSettled([recoverPost, ...updatePosts]);
   });
 
-  /**
-   * prev: null ← 1 ← 10 ← 21 ← 32
-   * next: null ← 1 ← 10 ← 32
-   */
   test("게시글 삭제 후, 부모 게시글과 손자 게시글 계층 연결", async () => {
     const status = await usecase.deleteBreadcrumbs({ postSeq, userSeq });
 

@@ -54,7 +54,7 @@ function insertBreadcrumbs({ maxLv, maxSiblingSize }) {
     lv: lv + 1,
     maxLv,
     maxSiblingSize,
-    promises: [makePromise({ postSeq, superSeq: null })],
+    promises: [],
     superSeq: postSeq,
   });
 
