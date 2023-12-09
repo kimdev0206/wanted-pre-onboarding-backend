@@ -4,6 +4,7 @@ const path = require("path");
 const dirName = path.basename(__dirname);
 const fileName = path.basename(__filename, ".js");
 const logger = require("../utils/logger");
+const { postRepository: repository } = require("../repositories");
 
 function validateUserParam(req, res, next) {
   try {
@@ -36,6 +37,19 @@ function validatePostSeqType(req, res, next) {
     return res.json({ message: "유효하지 않은 게시글 일련번호 형식입니다." });
   }
 
+  return next();
+}
+
+async function validatePostSeq(req, res, next) {
+  const { postSeq } = req.params;
+  const [row] = await repository.selectPost(postSeq);
+
+  if (!row) {
+    res.status(statusCodes.BAD_REQUEST);
+    return res.json({ message: "유효하지 않은 게시글 일련번호 입니다." });
+  }
+
+  req.prevPost = row;
   return next();
 }
 
@@ -87,6 +101,7 @@ function handleErrorModule(err, req, res) {
 module.exports = Object.freeze({
   validateUserParam,
   validatePostSeqType,
+  validatePostSeq,
   validatePostTitle,
   verifyToken,
   handleErrorEndpoint,

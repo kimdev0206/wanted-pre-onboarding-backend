@@ -62,9 +62,10 @@ module.exports = ({ postUsecase: usecase, logger }) => {
 
   async function getPost(req, res) {
     const { postSeq } = req.params;
+    const prevPost = req.prevPost;
 
     try {
-      const result = await usecase.getPost(postSeq);
+      const result = await usecase.getPost({ postSeq, prevPost });
 
       const message = "특정 게시글 조회가 완료되었습니다.";
       res.json({ message, result });
@@ -80,6 +81,7 @@ module.exports = ({ postUsecase: usecase, logger }) => {
     const { postSeq } = req.params;
     const { userSeq } = req.decodedToken;
     const { postTitle, postContent } = req.body;
+    const prevPost = req.prevPost;
 
     try {
       const status = await usecase.putPost({
@@ -87,6 +89,7 @@ module.exports = ({ postUsecase: usecase, logger }) => {
         userSeq,
         postTitle,
         postContent,
+        prevPost,
       });
 
       const message = "특정 게시글 수정이 완료되었습니다.";
@@ -103,9 +106,10 @@ module.exports = ({ postUsecase: usecase, logger }) => {
   async function deletePost(req, res) {
     const { postSeq } = req.params;
     const { userSeq } = req.decodedToken;
+    const prevPost = req.prevPost;
 
     try {
-      const status = await usecase.deletePost({ postSeq, userSeq });
+      const status = await usecase.deletePost({ postSeq, userSeq, prevPost });
 
       const message = "특정 게시글 삭제가 완료되었습니다.";
       res.status(status);

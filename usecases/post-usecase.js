@@ -48,16 +48,8 @@ module.exports = ({ postRepository: repository, statusCodes }) => {
     });
   }
 
-  async function getPost(postSeq) {
-    const [row] = await repository.selectPost(postSeq);
-
-    if (!row) {
-      const err = new Error("유효하지 않은 게시글 일련번호 입니다.");
-      err.status = statusCodes.BAD_REQUEST;
-      return Promise.reject(err);
-    }
-
-    const { userSeq: _, ...result } = row;
+  async function getPost({ postSeq, prevPost }) {
+    const { userSeq: _, ...result } = prevPost;
     const [child, superTree] = await Promise.all([
       getChild(postSeq),
       getSuperTree(postSeq),
@@ -70,23 +62,21 @@ module.exports = ({ postRepository: repository, statusCodes }) => {
     });
   }
 
-  async function putPost({ postSeq, userSeq, postTitle, postContent }) {
-    const [row] = await repository.selectPost(postSeq);
-
-    if (!row) {
-      const err = new Error("유효하지 않은 게시글 일련번호 입니다.");
-      err.status = statusCodes.BAD_REQUEST;
-      return Promise.reject(err);
-    }
-
-    if (userSeq !== row.userSeq) {
+  async function putPost({
+    postSeq,
+    userSeq,
+    postTitle,
+    postContent,
+    prevPost,
+  }) {
+    if (userSeq !== prevPost.userSeq) {
       const err = new Error("권한이 없습니다.");
       err.status = statusCodes.FORBIDDEN;
       return Promise.reject(err);
     }
 
     const isNotModified =
-      postTitle === row.postTitle && postContent === row.postContent;
+      postTitle === prevPost.postTitle && postContent === prevPost.postContent;
 
     if (isNotModified) {
       return Promise.resolve(statusCodes.NO_CONTENT);
@@ -98,16 +88,7 @@ module.exports = ({ postRepository: repository, statusCodes }) => {
   }
 
   async function putBreadcrumbs({ postSeq, userSeq, superSeq }) {
-    const [[row], superTree] = await Promise.all([
-      repository.selectPost(postSeq),
-      getSuperTree(postSeq),
-    ]);
-
-    if (!row) {
-      const err = new Error("유효하지 않은 게시글 일련번호 입니다.");
-      err.status = statusCodes.BAD_REQUEST;
-      return Promise.reject(err);
-    }
+    const superTree = await getSuperTree(postSeq);
 
     if (userSeq !== row.userSeq) {
       const err = new Error("권한이 없습니다.");
@@ -127,16 +108,8 @@ module.exports = ({ postRepository: repository, statusCodes }) => {
     return Promise.resolve(statusCodes.CREATED);
   }
 
-  async function deletePost({ postSeq, userSeq }) {
-    const [row] = await repository.selectPost(postSeq);
-
-    if (!row) {
-      const err = new Error("유효하지 않은 게시글 일련번호 입니다.");
-      err.status = statusCodes.BAD_REQUEST;
-      return Promise.reject(err);
-    }
-
-    if (userSeq !== row.userSeq) {
+  async function deletePost({ postSeq, userSeq, prevPost }) {
+    if (userSeq !== prevPost.userSeq) {
       const err = new Error("권한이 없습니다.");
       err.status = statusCodes.FORBIDDEN;
       return Promise.reject(err);
@@ -148,17 +121,10 @@ module.exports = ({ postRepository: repository, statusCodes }) => {
   }
 
   async function deleteBreadcrumbs({ postSeq, userSeq }) {
-    const [[row], superTree, child] = await Promise.all([
-      repository.selectPost(postSeq),
+    const [superTree, child] = await Promise.all([
       getSuperTree(postSeq),
       getChild(postSeq),
     ]);
-
-    if (!row) {
-      const err = new Error("유효하지 않은 게시글 일련번호 입니다.");
-      err.status = statusCodes.BAD_REQUEST;
-      return Promise.reject(err);
-    }
 
     if (userSeq !== row.userSeq) {
       const err = new Error("권한이 없습니다.");

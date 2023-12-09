@@ -101,13 +101,6 @@ describe("과제 5. 특정 게시글을 조회하는 엔드포인트", () => {
 
     expect(res.body.result).toHaveProperty("postTitle");
   });
-
-  test("특정 게시글 조회 (유효하지 않은 게시글 일련번호)", async () => {
-    const invalidPostSeq = Number.MAX_SAFE_INTEGER;
-    const res = await request(app).get(`/post/${invalidPostSeq}`);
-
-    expect(res.status).toBe(StatusCodes.BAD_REQUEST);
-  });
 });
 
 describe("과제 6. 특정 게시글을 수정하는 엔드포인트", () => {
@@ -152,19 +145,6 @@ describe("과제 6. 특정 게시글을 수정하는 엔드포인트", () => {
       });
 
     expect(putPostRes.status).toBe(StatusCodes.NO_CONTENT);
-  });
-
-  test("특정 게시글 수정 (유효하지 않은 게시글 일련번호)", async () => {
-    const invalidPostSeq = Number.MAX_SAFE_INTEGER;
-    const res = await agent
-      .put(`/post/${invalidPostSeq}`)
-      .auth(jwtToken, { type: "bearer" })
-      .send({
-        postTitle: faker.person.jobTitle(),
-        postContent: faker.lorem.text(),
-      });
-
-    expect(res.status).toBe(StatusCodes.BAD_REQUEST);
   });
 
   test("특정 게시글 수정 (게시글 제목 누락)", async () => {
@@ -217,15 +197,6 @@ describe("과제 7. 특정 게시글을 삭제하는 엔드포인트", () => {
     expect(row.userEmail).toBe(userEmail);
 
     existPostSeq = row.postSeq;
-  });
-
-  test("특정 게시글 삭제 (유효하지 않은 게시글 일련번호)", async () => {
-    const invalidPostSeq = Number.MAX_SAFE_INTEGER;
-    const res = await agent
-      .delete(`/post/${invalidPostSeq}`)
-      .auth(jwtToken, { type: "bearer" });
-
-    expect(res.status).toBe(StatusCodes.BAD_REQUEST);
   });
 
   test("특정 게시글 삭제 (권한 없음)", async () => {

@@ -2,6 +2,7 @@ module.exports = ({
   postController: controller,
   express,
   validatePostSeqType,
+  validatePostSeq,
   validatePostTitle,
   verifyToken,
 }) => {
@@ -14,19 +15,24 @@ module.exports = ({
   router.get("/list", controller.getPostList);
 
   // 과제 5. 특정 게시글을 조회하는 엔드포인트
-  router.get("/:postSeq", validatePostSeqType, controller.getPost);
+  router.get(
+    "/:postSeq",
+    validatePostSeqType,
+    validatePostSeq,
+    controller.getPost
+  );
 
   // 과제 6. 특정 게시글을 수정하는 엔드포인트
   router.put(
     "/:postSeq",
-    [verifyToken, validatePostSeqType, validatePostTitle],
+    [verifyToken, validatePostSeqType, validatePostSeq, validatePostTitle],
     controller.putPost
   );
 
   // 과제 7. 특정 게시글을 삭제하는 엔드포인트
   router.delete(
     "/:postSeq",
-    [verifyToken, validatePostSeqType],
+    [verifyToken, validatePostSeqType, validatePostSeq],
     controller.deletePost
   );
 
