@@ -28,7 +28,7 @@ function validateUserParam(req, res, next) {
   return next();
 }
 
-function validatePostSeq(req, res, next) {
+function validatePostSeqType(req, res, next) {
   const { postSeq } = req.params;
 
   if (isNaN(postSeq)) {
@@ -86,7 +86,7 @@ function handleErrorModule(err, req, res) {
 
 module.exports = Object.freeze({
   validateUserParam,
-  validatePostSeq,
+  validatePostSeqType,
   validatePostTitle,
   verifyToken,
   handleErrorEndpoint,
