@@ -6,8 +6,7 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const app = require("../apps")();
 const database = require("../apps/database");
-const makeUserRepository = require("../repositories/user-repository");
-const makePostRepository = require("../repositories/post-repository");
+const { userRepository, postRepository } = require("../repositories");
 
 const limit = 10;
 let userEmail, password, userSeq, agent, jwtToken;
@@ -27,9 +26,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  const repository = makeUserRepository(database);
-  await repository.deleteUser(userEmail);
-
+  await userRepository.deleteUser(userEmail);
   await database.close();
 });
 
@@ -92,8 +89,7 @@ describe("과제 5. 특정 게시글을 조회하는 엔드포인트", () => {
   let existPostSeq;
 
   beforeAll(async () => {
-    const repository = makePostRepository(database);
-    const [row] = await repository.selectLatestPost(userSeq);
+    const [row] = await postRepository.selectLatestPost(userSeq);
 
     expect(row.userEmail).toBe(userEmail);
 
@@ -118,8 +114,7 @@ describe("과제 6. 특정 게시글을 수정하는 엔드포인트", () => {
   let existPostSeq;
 
   beforeAll(async () => {
-    const repository = makePostRepository(database);
-    const [row] = await repository.selectLatestPost(userSeq);
+    const [row] = await postRepository.selectLatestPost(userSeq);
 
     expect(row.userEmail).toBe(userEmail);
 
@@ -217,8 +212,7 @@ describe("과제 7. 특정 게시글을 삭제하는 엔드포인트", () => {
   let existPostSeq;
 
   beforeAll(async () => {
-    const repository = makePostRepository(database);
-    const [row] = await repository.selectLatestPost(userSeq);
+    const [row] = await postRepository.selectLatestPost(userSeq);
 
     expect(row.userEmail).toBe(userEmail);
 

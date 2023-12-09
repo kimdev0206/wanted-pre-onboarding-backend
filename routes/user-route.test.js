@@ -5,7 +5,7 @@ const { StatusCodes } = require("http-status-codes");
 require("dotenv").config();
 const app = require("../apps")();
 const database = require("../apps/database");
-const makeUserRepository = require("../repositories/user-repository");
+const { userRepository: repository } = require("../repositories");
 
 let userEmail, password;
 
@@ -14,13 +14,9 @@ beforeAll(() => {
   password = faker.internet.password({ length: 8 });
 });
 
-afterAll((done) => {
-  const repository = makeUserRepository(database);
-
-  repository
-    .deleteUser(userEmail)
-    .then(() => database.close())
-    .then(done);
+afterAll(async () => {
+  await repository.deleteUser(userEmail);
+  await database.close();
 });
 
 describe("과제 1. 사용자 회원가입 엔드포인트 테스트", () => {
