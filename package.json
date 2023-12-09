@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@faker-js/faker": "^8.0.2",
+    "chai": "^4.3.10",
     "eslint": "^8.46.0",
     "eslint-config-prettier": "^8.9.0",
     "eslint-plugin-prettier": "^5.0.0",

@@ -1,11 +1,15 @@
 module.exports = (database) => {
   return Object.freeze({
     insertPost,
+    insertPostWithSeq,
     selectPostListCount,
     selectPostListPaging,
+    selectChild,
+    selectSuperTree,
     selectPost,
     selectLatestPost,
     updatePost,
+    updateSuperTree,
     deletePost,
   });
 
@@ -16,6 +20,24 @@ module.exports = (database) => {
         (user_seq, post_title, post_content)
       VALUES
         (${userSeq}, '${postTitle}', '${postContent}');
+    `;
+
+    await pool.query(query);
+  }
+
+  async function insertPostWithSeq({
+    postSeq,
+    superSeq,
+    postTitle,
+    postContent,
+    userSeq,
+  }) {
+    const pool = await database.get();
+    const query = `
+      INSERT INTO post
+        (post_seq, super_seq, user_seq, post_title, post_content)
+      VALUES
+        (${postSeq}, ${superSeq}, ${userSeq}, '${postTitle}', '${postContent}');
     `;
 
     await pool.query(query);
@@ -46,6 +68,50 @@ module.exports = (database) => {
         ON u.user_seq = p.user_seq
       ORDER BY created_at DESC
       LIMIT ${limit} OFFSET ${offset};
+    `;
+
+    const [result] = await pool.query(query);
+    return result;
+  }
+
+  async function selectChild(postSeq) {
+    const pool = await database.get();
+    const query = `
+			SELECT
+				post_seq AS postSeq
+      FROM
+        post
+			WHERE
+				super_seq = ${postSeq};
+		`;
+
+    const [result] = await pool.query(query);
+    return result;
+  }
+
+  async function selectSuperTree(postSeq) {
+    const pool = await database.get();
+    const query = `
+      WITH RECURSIVE cte AS (
+        SELECT
+          post_seq,
+          super_seq
+        FROM
+          post
+        WHERE
+          post_seq = ${postSeq}
+        UNION ALL
+        SELECT
+          p.post_seq,
+          p.super_seq
+        FROM
+          post AS p
+        INNER JOIN cte AS c
+          ON c.super_seq = p.post_seq
+      )
+      SELECT
+        post_seq AS postSeq
+      FROM cte;
     `;
 
     const [result] = await pool.query(query);
@@ -98,6 +164,22 @@ module.exports = (database) => {
         post_title = '${postTitle}',
         post_content = '${postContent}'
       WHERE user_seq = ${userSeq}
+        AND post_seq = ${postSeq};
+    `;
+
+    const [result] = await pool.query(query);
+    return result;
+  }
+
+  async function updateSuperTree({ postSeq, userSeq, superSeq }) {
+    const pool = await database.get();
+    const query = `
+      UPDATE
+        post
+      SET
+        super_seq = ${superSeq}
+      WHERE 
+        user_seq = ${userSeq}
         AND post_seq = ${postSeq};
     `;
 

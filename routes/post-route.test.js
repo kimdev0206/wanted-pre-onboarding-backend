@@ -30,7 +30,7 @@ afterAll(async () => {
   const repository = makeUserRepository(database);
   await repository.deleteUser(userEmail);
 
-  database.close();
+  await database.close();
 });
 
 describe("과제 3. 새로운 게시글을 생성하는 엔드포인트", () => {
