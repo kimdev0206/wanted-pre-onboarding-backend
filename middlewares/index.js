@@ -29,6 +29,18 @@ function validateUserParam(req, res, next) {
   return next();
 }
 
+function validateUserSeq(req, res, next) {
+  const { userSeq } = req.decodedToken;
+  const prevPost = req.prevPost;
+
+  if (userSeq !== prevPost.userSeq) {
+    res.status(statusCodes.FORBIDDEN);
+    return res.json({ message: "권한이 없습니다." });
+  }
+
+  return next();
+}
+
 function validatePostSeqType(req, res, next) {
   const { postSeq } = req.params;
 
@@ -100,6 +112,7 @@ function handleErrorModule(err, req, res) {
 
 module.exports = Object.freeze({
   validateUserParam,
+  validateUserSeq,
   validatePostSeqType,
   validatePostSeq,
   validatePostTitle,

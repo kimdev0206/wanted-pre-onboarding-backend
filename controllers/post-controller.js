@@ -106,10 +106,9 @@ module.exports = ({ postUsecase: usecase, logger }) => {
   async function deletePost(req, res) {
     const { postSeq } = req.params;
     const { userSeq } = req.decodedToken;
-    const prevPost = req.prevPost;
 
     try {
-      const status = await usecase.deletePost({ postSeq, userSeq, prevPost });
+      const status = await usecase.deletePost({ postSeq, userSeq });
 
       const message = "특정 게시글 삭제가 완료되었습니다.";
       res.status(status);

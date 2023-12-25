@@ -4,6 +4,7 @@ const makePostRoute = require("./post-route");
 const { userController, postController } = require("../controllers");
 const {
   validateUserParam,
+  validateUserSeq,
   validatePostSeqType,
   validatePostSeq,
   validatePostTitle,
@@ -14,6 +15,7 @@ const userRoute = makeUserRoute({ userController, express, validateUserParam });
 const postRoute = makePostRoute({
   postController,
   express,
+  validateUserSeq,
   validatePostSeqType,
   validatePostSeq,
   validatePostTitle,

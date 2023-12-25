@@ -69,12 +69,6 @@ module.exports = ({ postRepository: repository, statusCodes }) => {
     postContent,
     prevPost,
   }) {
-    if (userSeq !== prevPost.userSeq) {
-      const err = new Error("권한이 없습니다.");
-      err.status = statusCodes.FORBIDDEN;
-      return Promise.reject(err);
-    }
-
     const isNotModified =
       postTitle === prevPost.postTitle && postContent === prevPost.postContent;
 
@@ -90,12 +84,6 @@ module.exports = ({ postRepository: repository, statusCodes }) => {
   async function putBreadcrumbs({ postSeq, userSeq, superSeq }) {
     const superTree = await getSuperTree(postSeq);
 
-    if (userSeq !== row.userSeq) {
-      const err = new Error("권한이 없습니다.");
-      err.status = statusCodes.FORBIDDEN;
-      return Promise.reject(err);
-    }
-
     const prevSuperSeq = superTree.at(-1);
     const isNotModified = prevSuperSeq === superSeq;
 
@@ -108,13 +96,7 @@ module.exports = ({ postRepository: repository, statusCodes }) => {
     return Promise.resolve(statusCodes.CREATED);
   }
 
-  async function deletePost({ postSeq, userSeq, prevPost }) {
-    if (userSeq !== prevPost.userSeq) {
-      const err = new Error("권한이 없습니다.");
-      err.status = statusCodes.FORBIDDEN;
-      return Promise.reject(err);
-    }
-
+  async function deletePost({ postSeq, userSeq }) {
     await repository.deletePost({ postSeq, userSeq });
 
     return Promise.resolve(statusCodes.NO_CONTENT);
@@ -125,12 +107,6 @@ module.exports = ({ postRepository: repository, statusCodes }) => {
       getSuperTree(postSeq),
       getChild(postSeq),
     ]);
-
-    if (userSeq !== row.userSeq) {
-      const err = new Error("권한이 없습니다.");
-      err.status = statusCodes.FORBIDDEN;
-      return Promise.reject(err);
-    }
 
     const promises = child.map((subSeq) => getSuperTree(subSeq));
 
