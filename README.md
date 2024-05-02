@@ -1,23 +1,15 @@
-# 원티드 프리온보딩 백엔드 인턴십 - 선발 과제
+# 온라인 게시판 API
 
-- [원티드 프리온보딩 백엔드 인턴십 - 선발 과제](#원티드-프리온보딩-백엔드-인턴십---선발-과제)
-  - [애플리케이션의 실행 방법 (링크)](#애플리케이션의-실행-방법-링크)
-  - [데이터베이스 테이블 구조 (링크)](#데이터베이스-테이블-구조-링크)
-  - [API 명세 (링크)](#api-명세-링크)
-  - [클라우드 환경에 배포 환경을 설계하고 애플리케이션을 배포한 경우](#클라우드-환경에-배포-환경을-설계하고-애플리케이션을-배포한-경우)
+<br/>
 
-## [애플리케이션의 실행 방법 (링크)](https://github.com/yongki150/wanted-pre-onboarding-backend/wiki/%5B문서%5D-애플리케이션-실행-방법)
+## [통합 테스트 결과](https://github.com/kimdev0206/wanted-pre-onboarding-backend/wiki/%5B%EB%AC%B8%EC%84%9C%5D-%ED%86%B5%ED%95%A9-%ED%85%8C%EC%8A%A4%ED%8A%B8-%EA%B2%B0%EA%B3%BC)
 
-링크를 확인해주세요.
+통합 테스트로 API 명세서 작성을 대체합니다.
 
-## [데이터베이스 테이블 구조 (링크)](https://www.erdcloud.com/p/4ouaNgGNEtBu4Zd7y)
+통합 테스트 결과는 링크를 확인해주세요.
 
-링크를 확인해주세요.
+## 추가 요구사항
 
-## [API 명세 (링크)](https://documenter.getpostman.com/view/11900791/2s9XxtzGEj)
+특정 게시글 조회 시, 계층 정보도 반환해주세요.
 
-링크를 확인해주세요.
-
-## 클라우드 환경에 배포 환경을 설계하고 애플리케이션을 배포한 경우
-
-![프리온보딩 drawio](https://github.com/yongki150/wanted-pre-onboarding-backend/assets/53007747/5a253b6f-a40f-493d-91cb-332d296f86f0)
+[계층 정보 처리 시간 개선 과정](https://github.com/kimdev0206/wanted-pre-onboarding-backend/wiki/%5B%EC%84%B1%EB%8A%A5-%EA%B0%9C%EC%84%A0%5D-breadcrumbs-%EC%9D%BD%EA%B8%B0-%EC%9E%91%EC%97%85-%EA%B0%9C%EC%84%A0-%EA%B3%BC%EC%A0%95) 은 링크를 확인해주세요.

@@ -1,13 +1,2 @@
-# dependencies
 node_modules/
 package-lock.json
-
-# env
-.env
-
-# etc
-assets/
-certs/
-
-# local docker container 
-db/

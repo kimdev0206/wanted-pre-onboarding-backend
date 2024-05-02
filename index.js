@@ -1,10 +1,7 @@
-require("dotenv").config();
-require("./apps/database");
+const App = require("./src/app");
+const database = require("./src/database");
 
-const app = require("./apps")();
-const logger = require("./utils/logger");
-const port = 3000;
+const app = new App();
 
-app.listen(port, () => {
-  logger.info(`API 서버가 ${port}포트에서 활성화되었습니다.`);
-});
+app.listen(3000, () => console.log("Listening on 3000"));
+database.connect();
