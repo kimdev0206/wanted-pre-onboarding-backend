@@ -1,4 +1,5 @@
 const PostRepository = require("../repositories/post.repository");
+const { isAllSettled } = require("../../utils");
 
 function PostService() {
   this.repository = new PostRepository();
@@ -52,7 +53,7 @@ PostService.prototype.getPost = async function (postSeq) {
     this.repository.selectSubs(postSeq),
   ]);
 
-  const superSeqs = supers.map((each) => each.postSeq).reverse();
+  const superSeqs = supers.map((each) => each.postSeq);
   const subSeqs = subs.map((each) => each.postSeq);
 
   return {
@@ -95,7 +96,20 @@ PostService.prototype.deletePost = async function (params) {
     throw error;
   }
 
-  await this.repository.deletePost(params);
+  const results = await Promise.allSettled([
+    this.repository.deletePost(params),
+    this.repository.deletePostHasClosure(params.postSeq),
+  ]);
+
+  if (!isAllSettled(results)) {
+    const rejectedResults = results.filter(
+      (result) => result.status === "rejected"
+    );
+
+    throw new Error(
+      `${rejectedResults.length} 개의 I/O 처리가 실패하였습니다.`
+    );
+  }
 
   return 204;
 };

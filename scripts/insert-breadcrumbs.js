@@ -1,56 +1,100 @@
-const { makePostPromise, makePostSeq } = require("./utils");
+const { performance } = require("node:perf_hooks");
+const {
+  makePostHasClosurePromise,
+  makePostPromise,
+  makePostSeq,
+} = require("./utils");
 const database = require("../src/database");
-const { isAllSettled } = require("../utils");
+const { isFulfilled, isRejected } = require("../utils");
 
 // NOTE: 변경 가능합니다.
 const maxLv = 1000;
 const userSeq = 1;
 
-function make({ lv, superSeq, promises }) {
+function make({ lv, superSeqs, postPromises, postHasClosurePromises }) {
   if (lv === maxLv) return;
 
   const postSeq = makePostSeq({ lv, seq: lv - 1 });
-  promises.push(makePostPromise({ postSeq, superSeq, userSeq }));
+  postPromises.push(makePostPromise({ postSeq, userSeq }));
+
+  const promises = superSeqs.map((superSeq) =>
+    makePostHasClosurePromise({ superSeq, subSeq: postSeq })
+  );
+  postHasClosurePromises.push(...promises);
 
   make({
     lv: lv + 1,
-    superSeq: postSeq,
-    promises,
+    superSeqs: [...superSeqs, postSeq],
+    postPromises,
+    postHasClosurePromises,
   });
 
-  return promises;
+  return { postPromises, postHasClosurePromises };
 }
 
 function run() {
   const postSeq = 1;
 
-  const promises = make({
+  const { postPromises, postHasClosurePromises } = make({
     lv: 1,
-    superSeq: postSeq,
-    promises: [],
+    superSeqs: [postSeq],
+    postPromises: [],
+    postHasClosurePromises: [],
   });
 
-  return Promise.allSettled(promises);
+  return Promise.allSettled([
+    Promise.allSettled(postPromises),
+    Promise.allSettled(postHasClosurePromises),
+  ]);
 }
 
 (async function () {
+  const startTime = performance.now();
+
   try {
-    const results = await run();
+    var [{ value: postResults }, { value: postHasClosureResults }] =
+      await run();
 
-    if (!isAllSettled(results)) {
-      const rejectedResults = results.filter(
-        (result) => result.status === "rejected"
-      );
+    var rejectedPostResults = postResults.filter(isRejected);
+    var rejectedPostHasClosureResults =
+      postHasClosureResults.filter(isRejected);
 
-      throw new Error(
-        `${rejectedResults.length} 개의 게시글이 삽입 실패하였습니다.`
-      );
-    }
+    const errors = [
+      ...rejectedPostResults,
+      ...rejectedPostHasClosureResults,
+    ].map((result) => result.reason);
 
-    console.log(`게시글 ${results.length} 개를 삽입하였습니다.`);
+    errors.length && console.error(errors);
   } catch (error) {
     console.error(error);
   } finally {
+    const endTime = performance.now();
+    const perfTime = Math.round(endTime - startTime);
+
+    console.log(
+      "[",
+      [
+        `성공 ${postResults.filter(isFulfilled).length} 개`,
+        `유실 ${rejectedPostResults.length} 개`,
+        `전체 ${postResults.length} 개`,
+      ].join(", "),
+      "]",
+      "posts 테이블"
+    );
+    console.log(
+      "[",
+      [
+        `성공 ${postHasClosureResults.filter(isFulfilled).length} 개`,
+        `유실 ${rejectedPostHasClosureResults.length} 개`,
+        `전체 ${postHasClosureResults.length} 개`,
+      ].join(", "),
+      "]",
+      "post_has_closure 테이블"
+    );
+    console.log(
+      `Call to "node scripts/insert-breadcrumbs.js" took ${perfTime} ms`
+    );
+
     database.pool.end();
   }
 })();

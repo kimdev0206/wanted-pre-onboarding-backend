@@ -1,4 +1,7 @@
-const { makePostPromise } = require("../scripts/utils");
+const {
+  makePostPromise,
+  makePostHasClosurePromise,
+} = require("../scripts/utils");
 const PostRepository = require("../src/repositories/post.repository");
 const database = require("../src/database");
 const { isAllSettled } = require("../utils");
@@ -15,12 +18,16 @@ afterAll(async () => await database.pool.end());
 
 describe("부모 게시글 일련번호 수정", () => {
   beforeEach(async () => {
-    const params = {
-      userSeq,
-      superSeq: 1,
-      postSeq: newSuperSeq,
-    };
-    await makePostPromise(params);
+    await Promise.allSettled([
+      makePostPromise({
+        userSeq,
+        postSeq: newSuperSeq,
+      }),
+      repository.insertPostHasClosure({
+        superSeq: 1,
+        subSeq: newSuperSeq,
+      }),
+    ]);
   });
 
   afterEach(async () => {
@@ -29,7 +36,6 @@ describe("부모 게시글 일련번호 수정", () => {
 
     const results = await Promise.allSettled([
       repository.updateSupers({
-        userSeq,
         superSeq: prevSuperSeq,
         postSeq,
       }),
@@ -46,7 +52,6 @@ describe("부모 게시글 일련번호 수정", () => {
     expect(supers.at(-1).postSeq).toBe(prevSuperSeq);
 
     const params = {
-      userSeq,
       superSeq: newSuperSeq,
       postSeq,
     };
@@ -57,60 +62,45 @@ describe("부모 게시글 일련번호 수정", () => {
 });
 
 describe("게시글 삭제 후, 부모 게시글과 손자 게시글 계층 연결", () => {
-  let title, content;
+  let title, content, superSeqs, subSeqs;
 
   beforeEach(async () => {
-    const row = await repository.selectPost(postSeq);
+    const [posts, supers, subs] = await Promise.all([
+      repository.selectPost(postSeq),
+      repository.selectSupers(postSeq),
+      repository.selectSubs(postSeq),
+    ]);
 
-    title = row.title;
-    content = row.content;
+    title = posts.title;
+    content = posts.content;
+    superSeqs = supers.map((each) => each.postSeq);
+    subSeqs = subs.map((each) => each.postSeq);
   });
 
   afterEach(async () => {
-    const superSeq = prevSuperSeq;
-    const subSeq = 32;
-    const postSeqs = [superSeq, postSeq, subSeq];
-
     const params = {
       userSeq,
       postSeq,
-      superSeq,
       title,
       content,
     };
     const post = makePostPromise(params);
 
-    let updatePosts = [];
+    const supers = superSeqs.map((superSeq) =>
+      makePostHasClosurePromise({ superSeq, subSeq: postSeq })
+    );
+    const subs = subSeqs.map((subSeq) =>
+      makePostHasClosurePromise({ superSeq: postSeq, subSeq })
+    );
 
-    for (let i = 1; i < postSeqs.length; i++) {
-      const params = {
-        userSeq,
-        superSeq: postSeqs[i - 1],
-        postSeq: postSeqs[i],
-      };
-      updatePosts.push(repository.updateSupers(params));
-    }
-
-    const results = await Promise.allSettled([post, ...updatePosts]);
+    const results = await Promise.allSettled([post, ...supers, ...subs]);
     expect(isAllSettled(results)).toBe(true);
   });
 
   test("게시글 삭제 후, 부모 게시글과 손자 게시글 계층 연결", async () => {
-    const [supers, subs] = await Promise.all([
-      repository.selectSupers(postSeq),
-      repository.selectSubs(postSeq),
-    ]);
-
     const results = await Promise.allSettled([
-      repository.updateSupers({
-        userSeq,
-        superSeq: supers.at(-1).postSeq,
-        postSeq: subs.at(0).postSeq,
-      }),
-      repository.deletePost({
-        userSeq,
-        postSeq,
-      }),
+      repository.deletePost({ userSeq, postSeq }),
+      repository.deletePostHasClosure(postSeq),
     ]);
     expect(isAllSettled(results)).toBe(true);
   });

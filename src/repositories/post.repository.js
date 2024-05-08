@@ -26,22 +26,32 @@ PostRepository.prototype.insertPostWithPK = async function (params) {
     INSERT INTO posts
       (
         post_seq,
-        super_seq,
         user_seq,
         title,
         content
       )
     VALUES
-      (?, ?, ?, ?, ?);
+      (?, ?, ?, ?);
   `;
 
-  const values = [
-    params.postSeq,
-    params.superSeq,
-    params.userSeq,
-    params.title,
-    params.content,
-  ];
+  const values = [params.postSeq, params.userSeq, params.title, params.content];
+  await pool.query(query, values);
+};
+
+PostRepository.prototype.insertPostHasClosure = async function (params) {
+  const pool = database.pool;
+  const query = `
+    INSERT INTO
+      post_has_closure
+      (
+        super_seq,
+        sub_seq
+      )
+    VALUES
+      (?, ?);
+  `;
+
+  const values = [params.superSeq, params.subSeq];
   await pool.query(query, values);
 };
 
@@ -89,9 +99,9 @@ PostRepository.prototype.selectSubs = async function (postSeq) {
   const pool = database.pool;
   const query = `
     SELECT
-      post_seq AS postSeq
+      sub_seq AS postSeq
     FROM
-      posts
+      post_has_closure
     WHERE
       super_seq = ?;
   `;
@@ -104,27 +114,15 @@ PostRepository.prototype.selectSubs = async function (postSeq) {
 PostRepository.prototype.selectSupers = async function (postSeq) {
   const pool = database.pool;
   const query = `
-    WITH RECURSIVE cte AS (
-      SELECT
-        post_seq,
-        super_seq
-      FROM
-        posts
-      WHERE
-        post_seq = ?
-      UNION ALL
-      SELECT
-        p.post_seq,
-        p.super_seq
-      FROM
-        posts AS p
-      INNER JOIN 
-        cte AS c
-        ON p.post_seq = c.super_seq
-    )
     SELECT
-      post_seq AS postSeq
-    FROM cte;
+      super_seq AS postSeq
+    FROM
+      posts AS p
+    LEFT JOIN
+      post_has_closure AS pc
+      ON p.post_seq = pc.super_seq
+    WHERE
+      pc.sub_seq = ?;
   `;
 
   const values = [postSeq];
@@ -184,15 +182,28 @@ PostRepository.prototype.updateSupers = async function (params) {
   const pool = database.pool;
   const query = `
     UPDATE
-      posts
+      post_has_closure
     SET
       super_seq = ?
-    WHERE 
-      user_seq = ?
-      AND post_seq = ?;
+    WHERE
+      super_seq = (
+        SELECT
+          TB.super_seq
+        FROM (
+          SELECT
+            super_seq
+          FROM
+            post_has_closure
+          WHERE
+            sub_seq = ?
+          ORDER BY
+            super_seq DESC
+          LIMIT 1
+        ) AS TB
+      );    
   `;
 
-  const values = [params.superSeq, params.userSeq, params.postSeq];
+  const values = [params.superSeq, params.postSeq];
   const [result] = await pool.query(query, values);
   return result;
 };
@@ -209,6 +220,22 @@ PostRepository.prototype.deletePost = async function (params) {
   `;
 
   const values = [params.userSeq, params.postSeq];
+  const [result] = await pool.query(query, values);
+  return result;
+};
+
+PostRepository.prototype.deletePostHasClosure = async function (postSeq) {
+  const pool = database.pool;
+  const query = `
+    DELETE
+    FROM 
+      post_has_closure
+    WHERE
+      super_seq = ?
+      OR sub_seq = ?;
+  `;
+
+  const values = [postSeq, postSeq];
   const [result] = await pool.query(query, values);
   return result;
 };

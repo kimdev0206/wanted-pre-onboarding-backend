@@ -5,7 +5,7 @@ function Database() {
     host: "localhost",
     user: "root",
     password: "root",
-    database: "wanted_pre_onboarding",
+    database: "breadcrumbs_closure",
   };
   pool = mysql.createPool(poolOptions);
 

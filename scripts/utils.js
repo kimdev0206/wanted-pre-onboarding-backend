@@ -1,10 +1,24 @@
 const { faker } = require("@faker-js/faker");
 
 module.exports = {
+  makePostHasClosurePromise: makePostHasClosurePromise(),
   makePostPromise: makePostPromise(),
   makePostSeq,
   makePostSeqSibling,
 };
+
+function makePostHasClosurePromise() {
+  const PostRepository = require("../src/repositories/post.repository");
+  const repository = new PostRepository();
+
+  return function ({ superSeq, subSeq }) {
+    const params = {
+      superSeq,
+      subSeq,
+    };
+    return repository.insertPostHasClosure(params);
+  };
+}
 
 function makePostPromise() {
   const PostRepository = require("../src/repositories/post.repository");
@@ -12,14 +26,12 @@ function makePostPromise() {
 
   return function ({
     postSeq,
-    superSeq,
     userSeq,
     title = faker.person.jobTitle(),
     content = faker.lorem.text(),
   }) {
     const params = {
       postSeq,
-      superSeq,
       userSeq,
       title,
       content,

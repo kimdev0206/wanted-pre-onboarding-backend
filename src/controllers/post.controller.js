@@ -87,9 +87,7 @@ PostController.prototype.getPost = async function (req, res, next) {
   } finally {
     const endTime = performance.now();
 
-    console.log(
-      `Call to getPost took ${Math.round(endTime - startTime)} ms`
-    );
+    console.log(`Call to getPost took ${Math.round(endTime - startTime)} ms`);
   }
 };
 
