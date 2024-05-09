@@ -1,7 +1,7 @@
-const { performance } = require("node:perf_hooks");
+const path = require("node:path");
 const { makePostPromise, makePostSeq } = require("./utils");
 const database = require("../src/database");
-const { isFulfilled, isRejected } = require("../utils");
+const { isFulfilled, isRejected, perfTime } = require("../utils");
 
 // NOTE: 변경 가능합니다.
 const maxLv = 1000;
@@ -34,9 +34,7 @@ function run() {
   return Promise.allSettled(promises);
 }
 
-(async function () {
-  const startTime = performance.now();
-
+perfTime(async function () {
   try {
     var results = await run();
     var rejectedResults = results.filter(isRejected);
@@ -46,9 +44,6 @@ function run() {
   } catch (error) {
     console.error(error);
   } finally {
-    const endTime = performance.now();
-    const perfTime = Math.round(endTime - startTime);
-
     console.log(
       "[",
       [
@@ -59,10 +54,7 @@ function run() {
       "]",
       "posts 테이블"
     );
-    console.log(
-      `Call to "node scripts/insert-breadcrumbs.js" took ${perfTime} ms`
-    );
 
     database.pool.end();
   }
-})();
+}, path.basename(__filename))();
