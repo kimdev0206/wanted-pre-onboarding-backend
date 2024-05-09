@@ -1,7 +1,8 @@
-const { performance } = require("node:perf_hooks");
+const path = require("node:path");
 const { Router } = require("express");
 const { verifyAccessToken } = require("../middlewares");
 const PostService = require("../services/post.service");
+const { perfTime } = require("../../utils");
 
 function PostController() {
   this.service = new PostService();
@@ -71,9 +72,7 @@ PostController.prototype.getPosts = async function (req, res, next) {
   }
 };
 
-PostController.prototype.getPost = async function (req, res, next) {
-  const startTime = performance.now();
-
+PostController.prototype.getPost = perfTime(async function (req, res, next) {
   try {
     const { postSeq } = req.params;
     const { meta, data } = await this.service.getPost(postSeq);
@@ -84,12 +83,8 @@ PostController.prototype.getPost = async function (req, res, next) {
     });
   } catch (error) {
     next(error);
-  } finally {
-    const endTime = performance.now();
-
-    console.log(`Call to getPost took ${Math.round(endTime - startTime)} ms`);
   }
-};
+}, `${path.basename(__filename)} getPost`);
 
 PostController.prototype.putPost = async function (req, res, next) {
   try {

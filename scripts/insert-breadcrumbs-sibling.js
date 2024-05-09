@@ -1,4 +1,4 @@
-const { performance } = require("node:perf_hooks");
+const path = require("node:path");
 const {
   makePostHasClosurePromise,
   makePostPromise,
@@ -6,7 +6,7 @@ const {
   makePostSeqSibling,
 } = require("./utils");
 const database = require("../src/database");
-const { isFulfilled, isRejected } = require("../utils");
+const { isFulfilled, isRejected, perfTime } = require("../utils");
 
 // NOTE: 변경 가능합니다.
 const maxLv = 10;
@@ -61,9 +61,7 @@ function run() {
   ]);
 }
 
-(async function () {
-  const startTime = performance.now();
-
+perfTime(async function () {
   try {
     var [{ value: postResults }, { value: postHasClosureResults }] =
       await run();
@@ -81,9 +79,6 @@ function run() {
   } catch (error) {
     console.error(error);
   } finally {
-    const endTime = performance.now();
-    const perfTime = Math.round(endTime - startTime);
-
     console.log(
       "[",
       [
@@ -104,10 +99,7 @@ function run() {
       "]",
       "post_has_closure 테이블"
     );
-    console.log(
-      `Call to "node scripts/insert-breadcrumbs-sibling.js" took ${perfTime} ms`
-    );
 
     database.pool.end();
   }
-})();
+}, path.basename(__filename))();
