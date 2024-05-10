@@ -12,4 +12,4 @@
 
 특정 게시글 조회 시, 계층 정보도 반환해주세요.
 
-[계층 정보 처리 시간 개선 과정](https://github.com/kimdev0206/wanted-pre-onboarding-backend/wiki/%5B%EC%84%B1%EB%8A%A5-%EA%B0%9C%EC%84%A0%5D-breadcrumbs-%EC%9D%BD%EA%B8%B0-%EC%9E%91%EC%97%85-%EA%B0%9C%EC%84%A0-%EA%B3%BC%EC%A0%95) 은 링크를 확인해주세요.
+[계층 정보 처리 시간 개선 과정](https://github.com/kimdev0206/wanted-pre-onboarding-backend/wiki/%5B%EC%84%B1%EB%8A%A5-%EA%B0%9C%EC%84%A0%5D-%EA%B3%84%EC%B8%B5-%EC%A0%95%EB%B3%B4-%EC%9D%BD%EA%B8%B0-%EC%9E%91%EC%97%85-%EA%B0%9C%EC%84%A0-%EA%B3%BC%EC%A0%95) 은 링크를 확인해주세요.
