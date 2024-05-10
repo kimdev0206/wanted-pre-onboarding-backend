@@ -11,11 +11,7 @@ function makePostHasClosurePromise() {
   const PostRepository = require("../src/repositories/post.repository");
   const repository = new PostRepository();
 
-  return function ({ superSeq, subSeq }) {
-    const params = {
-      superSeq,
-      subSeq,
-    };
+  return function (params) {
     return repository.insertPostHasClosure(params);
   };
 }

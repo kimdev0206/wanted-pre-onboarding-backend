@@ -18,15 +18,18 @@ afterAll(async () => await database.pool.end());
 
 describe("부모 게시글 일련번호 수정", () => {
   beforeEach(async () => {
+    const postParam = {
+      userSeq,
+      postSeq: newSuperSeq,
+    };
+    const postHasClosureParam = {
+      superSeq: 1,
+      subSeq: newSuperSeq,
+    };
+
     await Promise.allSettled([
-      makePostPromise({
-        userSeq,
-        postSeq: newSuperSeq,
-      }),
-      repository.insertPostHasClosure({
-        superSeq: 1,
-        subSeq: newSuperSeq,
-      }),
+      makePostPromise(postParam),
+      repository.insertPostHasClosure([postHasClosureParam]),
     ]);
   });
 
@@ -86,14 +89,19 @@ describe("게시글 삭제 후, 부모 게시글과 손자 게시글 계층 연�
     };
     const post = makePostPromise(params);
 
-    const supers = superSeqs.map((superSeq) =>
-      makePostHasClosurePromise({ superSeq, subSeq: postSeq })
-    );
-    const subs = subSeqs.map((subSeq) =>
-      makePostHasClosurePromise({ superSeq: postSeq, subSeq })
-    );
+    const superParams = superSeqs.map((superSeq) => ({
+      superSeq,
+      subSeq: postSeq,
+    }));
+    const supers = makePostHasClosurePromise(superParams);
 
-    const results = await Promise.allSettled([post, ...supers, ...subs]);
+    const subParams = subSeqs.map((subSeq) => ({
+      superSeq: postSeq,
+      subSeq,
+    }));
+    const subs = makePostHasClosurePromise(subParams);
+
+    const results = await Promise.allSettled([post, supers, subs]);
     expect(isAllSettled(results)).toBe(true);
   });
 

@@ -20,19 +20,19 @@ function make({ lv, superSeqs, postPromises, postHasClosurePromises }) {
   const postSeq = makePostSeq({ lv, seq: prevLv });
   postPromises.push(makePostPromise({ postSeq, userSeq }));
 
-  const promises = superSeqs.map((superSeq) =>
-    makePostHasClosurePromise({ superSeq, subSeq: postSeq })
-  );
-  postHasClosurePromises.push(...promises);
+  const params = superSeqs.map((superSeq) => ({ superSeq, subSeq: postSeq }));
+  const promise = makePostHasClosurePromise(params);
+
+  postHasClosurePromises.push(promise);
 
   for (let seq = 1; seq < maxSiblingSize; seq += 1) {
     const postSeq = makePostSeqSibling({ lv, prevLv, seq, maxSiblingSize });
     postPromises.push(makePostPromise({ postSeq, userSeq }));
 
-    const promises = superSeqs.map((superSeq) =>
-      makePostHasClosurePromise({ superSeq, subSeq: postSeq })
-    );
-    postHasClosurePromises.push(...promises);
+    const params = superSeqs.map((superSeq) => ({ superSeq, subSeq: postSeq }));
+    const promise = makePostHasClosurePromise(params);
+
+    postHasClosurePromises.push(promise);
   }
 
   make({

@@ -48,11 +48,11 @@ PostRepository.prototype.insertPostHasClosure = async function (params) {
         sub_seq
       )
     VALUES
-      (?, ?);
+      ?;
   `;
 
-  const values = [params.superSeq, params.subSeq];
-  await pool.query(query, values);
+  const values = params.map((param) => [param.superSeq, param.subSeq]);
+  await pool.query(query, [values]);
 };
 
 PostRepository.prototype.selectPosts = async function (params) {

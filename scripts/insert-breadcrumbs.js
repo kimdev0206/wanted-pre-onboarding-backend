@@ -17,10 +17,10 @@ function make({ lv, superSeqs, postPromises, postHasClosurePromises }) {
   const postSeq = makePostSeq({ lv, seq: lv - 1 });
   postPromises.push(makePostPromise({ postSeq, userSeq }));
 
-  const promises = superSeqs.map((superSeq) =>
-    makePostHasClosurePromise({ superSeq, subSeq: postSeq })
-  );
-  postHasClosurePromises.push(...promises);
+  const params = superSeqs.map((superSeq) => ({ superSeq, subSeq: postSeq }));
+  const promise = makePostHasClosurePromise(params);
+
+  postHasClosurePromises.push(promise);
 
   make({
     lv: lv + 1,
